@@ -19,9 +19,18 @@ I = np.identity(3)
 # Instantiate a rigid body object, a quadrotor 
 quad = RigidBody(pos,Rb2e,Vb,Ob,mass,I)
 
-print(quad.pos)
+# Simulation parameters
+dt_sim = 0.01  # seconds
+T_sim = 10     # seconds
+dt_log = 1     # seconds
 
-for i in range(100):
-  quad.run_quadrotor(0.01)
-  print(quad.pos)
+
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      print(t, quad.pos)        
 
