@@ -1,0 +1,9 @@
+18/06
+   - I need to do a Python tutorial /course
+   - I need to do a pyplot tutorial/course ( for the Plotter )
+   - I need to make a sort of test cases for the RBD
+   - Add info and configuration about the  about noise level parameters  
+
+19/06
+   - created mgt folder
+    
