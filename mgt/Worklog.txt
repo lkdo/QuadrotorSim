@@ -10,6 +10,9 @@
    - implemented Rtm2euler angles 
    - started to look at test cases, I need a better logger
      mainly to write to files the test file output
+   - went through roughly half of PEP8, at some point to continue
+   - updated the mgt sheet, plenty of tasks for tomorrow :)
+
 
 
     
