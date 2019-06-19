@@ -17,10 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this package, in a file called LICENSE.  
 If not, see <https://www.gnu.org/licenses/>.
 """
-
+import numpy as np
+import utils as ut
 
 class Logger:
-  """ Handles the logging """
+  """ This class implements logging functionality """
   
   def __init__(self, baseName, runName):
      self.baseName = baseName
@@ -28,11 +29,15 @@ class Logger:
      
      self.RigidBodyLogger_time = []
      self.RigidBodyLogger_pos = []
+     self.RigidBodyLogger_euler = []
      
   def log_RigidBody(self, t, RB):
      self.RigidBodyLogger_time.append(t)   
      self.RigidBodyLogger_pos.append(RB.pos)
+     self.RigidBodyLogger_euler.append(ut.R2EXYZ(np.transpose(RB.Rb2e)))
      
   def print_RigidBody(self):
       for i in range(len(self.RigidBodyLogger_time)):
-        print(self.RigidBodyLogger_time[i],self.RigidBodyLogger_pos[i])
+        print(self.RigidBodyLogger_time[i],self.RigidBodyLogger_pos[i],
+              self.RigidBodyLogger_euler[i])
+        

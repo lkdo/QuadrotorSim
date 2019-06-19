@@ -6,4 +6,10 @@
 
 19/06
    - created mgt folder
+   - read about the structure of a python program, still learning a lot on this, to read more
+   - implemented Rtm2euler angles 
+   - started to look at test cases, I need a better logger
+     mainly to write to files the test file output
+
+
     

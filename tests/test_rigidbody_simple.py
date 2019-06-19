@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Part of the QuadrotorSim package
+""" Test Cases for the Rigid Body class implementing basic kinematics """
+
+""" Part of the QuadrotorSim package
 Copyright (C) 2019  Luminita-Cristiana Totu
 Contact: luminita.totu@gmail.com
 
@@ -57,9 +58,8 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    # Logging frequency    
    if ( abs(t % dt_log) < 0.00001 ):
       logger.log_RigidBody(t, quad)        
-
 logger.print_RigidBody()
-plot.plot_RigidBody(logger)
+
 
 
 # Test Fx force 
@@ -77,9 +77,8 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    # Logging frequency    
    if ( abs(t % dt_log) < 0.00001 ):
       logger.log_RigidBody(t, quad)        
-
 logger.print_RigidBody()
-plot.plot_RigidBody(logger)
+
 
 
 # Test Fy force 
@@ -97,9 +96,8 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    # Logging frequency    
    if ( abs(t % dt_log) < 0.00001 ):
       logger.log_RigidBody(t, quad)        
-
 logger.print_RigidBody()
-plot.plot_RigidBody(logger)
+
 
 # Test Fz force 
 quad = rb.RigidBody(pos,Rb2e,Vb,Ob,mass,I)
@@ -115,10 +113,161 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
 
    # Logging frequency    
    if ( abs(t % dt_log) < 0.00001 ):
-      logger.log_RigidBody(t, quad)        
-
-
-# Test Fz force 
-
+      logger.log_RigidBody(t, quad)
 logger.print_RigidBody()
-plot.plot_RigidBody(logger)
+
+
+# Test tau_x moment 
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob,mass,I)
+logger = log.Logger("test_ox","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0.1,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+
+# Test tau_y moment 
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob,mass,I)
+logger = log.Logger("test_oy","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0.1,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+
+# Test tau_z moment 
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob,mass,I)
+logger = log.Logger("test_oz","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0.1])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+# Test initial conditions on Vx
+quad = rb.RigidBody(pos,Rb2e,Vb+[1,0,0],Ob,mass,I)
+logger = log.Logger("test_vx","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+ 
+# Test initial conditions on Vy
+quad = rb.RigidBody(pos,Rb2e,Vb+[0,1,0],Ob,mass,I)
+logger = log.Logger("test_vy","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+# Test initial conditions on Vz
+quad = rb.RigidBody(pos,Rb2e,Vb+[0,0,1],Ob,mass,I)
+logger = log.Logger("test_vz","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+# Test initial conditions on ox
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob+[0.1,0,0],mass,I)
+logger = log.Logger("test_ox","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+# Test initial conditions on oy
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob+[0,0.1,0],mass,I)
+logger = log.Logger("test_oy","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
+
+# Test initial conditions on oz
+quad = rb.RigidBody(pos,Rb2e,Vb,Ob+[0,0,0.1],mass,I)
+logger = log.Logger("test_oz","B")
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
+   
+   # Control inputs to the quadrotor
+   Fb = np.array([0,0,0])
+   taub =  np.array([0,0,0])
+	 
+   # Run the dynamic / time forward
+   quad.run_quadrotor(dt_sim, Fb, taub)
+
+   # Logging frequency    
+   if ( abs(t % dt_log) < 0.00001 ):
+      logger.log_RigidBody(t, quad)        
+logger.print_RigidBody()
