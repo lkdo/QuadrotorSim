@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
-"""
-Part of the QuadrotorSim package
-Copyright (C) 2019  Luminita-Cristiana Totu
-Contact: luminita.totu@gmail.com
+# 
+# Copyright 2019 Luminita-Cristiana Totu
+#
+# Part of the QuadrotorSim aka quadsim package
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this package, in a file called LICENSE.
+# If not, see <https://www.gnu.org/licenses/>.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License
+""" Utility functions """
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this package, in a file called LICENSE.  
-If not, see <https://www.gnu.org/licenses/>.
-"""
+__version__ = "0.1"
+__author__ = "Luminita-Cristiana Totu"
+__copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
+__license__ = "GNU GPLv3"
 	
 import numpy as np
 import math
@@ -29,18 +35,24 @@ def SkS(X):
 def R2EXYZ(R):
     """ Transforms a rotation matrix to Euler X-Y-Z (1-2-3) angles
     
-    That is input matrix R = Rz(phi)*Ry(theta)*Rx(psi), and the output is
-    [psi, theta, phi]. Implements the pseudocode from "Computing Euler angles 
-    from a rotation matrix", by Gregory G. Slabaugh
+    That is input matrix R = Rz(phi)*Ry(theta)*Rx(psi), 
+    and the output is [psi, theta, phi]. 
+    Implements the pseudocode from
+    "Computing Euler angles from a rotation matrix", 
+    by Gregory G. Slabaugh
     """
     
     if R[3-1,1-1]!=1 and R[3-1,1-1]!=-1:
         theta1 = math.asin(R[3-1,1-1])
         theta2 = math.pi - theta1
-        psi1 = math.atan2(R[3-1,2-1]/math.cos(theta1),R[3-1,3-1]/math.cos(theta1))
-        psi2 = math.atan2(R[3-1,2-1]/math.cos(theta2),R[3-1,3-1]/math.cos(theta2))
-        phi1 = math.atan2(R[2-1,1-1]/math.cos(theta1),R[1-1,1-1]/math.cos(theta1))
-        phi2 = math.atan2(R[2-1,1-1]/math.cos(theta2),R[1-1,1-1]/math.cos(theta2))
+        psi1 = math.atan2(R[3-1,2-1]/math.cos(theta1),
+                          R[3-1,3-1]/math.cos(theta1))
+        psi2 = math.atan2(R[3-1,2-1]/math.cos(theta2),
+                          R[3-1,3-1]/math.cos(theta2))
+        phi1 = math.atan2(R[2-1,1-1]/math.cos(theta1),
+                          R[1-1,1-1]/math.cos(theta1))
+        phi2 = math.atan2(R[2-1,1-1]/math.cos(theta2),
+                          R[1-1,1-1]/math.cos(theta2))
        
         # Choose one set of rotations
         if  theta1 >= 0:

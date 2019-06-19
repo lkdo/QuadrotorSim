@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 # 
 # Copyright 2019 Luminita-Cristiana Totu
 #
@@ -18,17 +17,31 @@
 # along with this package, in a file called LICENSE.
 # If not, see <https://www.gnu.org/licenses/>.
 
+""" This is the Quadrotor Simulation aka quadsim package.
+
+It contains/will contain in a first version:
+    - a rigid body kinematic module which takes forces
+      and torques and integrates then into velocities, and position
+      and orientation;
+    - a quadrorot dynamic module, which contains a basic model 
+      of forces and torques given the rotor characteristics, and
+      also a noise model;
+    - a sensor module that implements accelerometers and gyroscope
+      ( and maybe magnetometer ) models, and a position sensor 
+    - an hierarhical PID control structure for flight stabilization
+    - a position controller 
+    - a logger module
+    - a graphical plotter module for signals 
+"""
+
 __version__ = "0.1"
 __author__ = "Luminita-Cristiana Totu"
 __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
-import os
-import sys
-sys.path.insert(
-    0,os.path.abspath(os.path.join(os.path.dirname(__file__), '..\quadsim')) 
-               )
-
-import rigidbody as rb
-import plotter as plt
-import logger as log
+__all__ = [
+        "rigidbody",
+        "utils",
+        "plotter",
+        "logger",
+        "cts" ]
