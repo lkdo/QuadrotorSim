@@ -24,6 +24,6 @@ class Plotter:
      ax_lst[1].plot( time, pos[:,1], marker = "o" )
      ax_lst[1].set_title("Y-axis")
      
-     ax_lst[2].plot( time, pos[:,2], marker = "o" )
+     ax_lst[2].plot( time, -pos[:,2], marker = "o" ) #minus because of the NED 
      ax_lst[2].set_title("Z-axis")
      

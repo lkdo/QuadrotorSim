@@ -6,23 +6,40 @@ Created on Mon Jun 17 20:47:53 2019
 """
 
 import numpy as np
-import math
 from constants import g_CONST
 from utils import SkS
 
 class RigidBody:
   """ Holds the minimum number of states and parameters 
-  to describe a Rigid Body, and implements the dynamics  """
+  to describe a Rigid Body, and implements the dynamics  
+  Works with NED coordinates """
 	
   def __init__(self, pos, Rb2e, Vb, 
                 Ob, mass, inertiaMatrix):
-    self.pos = pos
-    self.Rb2e = Rb2e
-    self.Vb = Vb
-    self.Ob = Ob
-    self.mass = mass;
-    self.I = inertiaMatrix;
-		
+    
+    self.pos = pos  # position vector, float in R3, meters
+    self.Rb2e = Rb2e # rotation matrix from body to earth, float in R3x3
+                     # ve = Rb2e*vb, 
+                     #           where vb - vector in body frame
+                     #                 ve - same vector in earth frame
+    self.Vb = Vb # velocity vector, float in R3, m/s     
+    self.Ob = Ob # angular velocity vector, float in R3, rad/s
+    self.mass = mass  # body mass, in kg
+    self.I = inertiaMatrix # Inertia Matrix in the body frame 
+                           # I =  [ Ixx  -Ixy  -Ixz 
+                           #       -Ixy   Iyy  -Iyz
+                           #       -Ixz  -Iyz  Izz  ], where 
+                           # Ixx, Iyy, Izz - Moments of Inertia around bodys
+                           # own 3 axis 
+                           #   Ixx = Integral_Volume (y*y + z*z) dm 
+                           #   Iyy = Integral_Volume (x*x + z*z) dm 
+                           #   Izz = Integral_Volume (x*x + y*y) dm
+                           # Ixy, Ixz, Iyz - Products of Inertia
+                           #   Ixy = Integral_Volume (xy) dm 
+                           #   Ixz = Integral_Volume (xz) dm 
+                           #   Iyz = Integral_Volume (yz) dm 
+    
+    	
   def run_quadrotor(self,dt,Fb,taub):
 
     ## Dynamic/Differential equations for rigid body motion/flight
@@ -36,12 +53,11 @@ class RigidBody:
     # dVb/dt =  -Sks(Ob)*Vb + Re2b*ge + 1/m*Fb + noise
     d_Vb = ( -np.dot(SkS(self.Ob),self.Vb) +  
                  np.dot(self.Rb2e.transpose(),[0, 0, g_CONST]) + 
-                 1/self.mass*Fb + 0.025*math.sqrt(1/dt)*np.random.randn(3) )
+                 1/self.mass*Fb )
     
     # dOb/dt = I^(-1)*(-SkS(Ob)*I*Ob + taub) + noise
     d_Ob = ( np.dot(np.linalg.inv(self.I), np.dot(-SkS(self.Ob),
-                  np.dot(self.I,self.Ob)) + taub ) + 
-	              0.025*math.sqrt(1/dt)*np.random.randn(3) )
+                  np.dot(self.I,self.Ob)) + taub ) )
     
     ## Integrate for over dt
     

@@ -9,6 +9,7 @@ import numpy as np
 from RigidBody import RigidBody
 from Logger import Logger
 from Plotter import Plotter
+from constants import g_CONST
 
 # Initialization values for the states of the quadrotor
 pos = np.array([0,0,0])
@@ -32,7 +33,7 @@ dt_log = 1     # seconds
 for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    
    # Control inputs to the quadrotor
-   Fb = np.array([0,0,-10])
+   Fb = np.array([0,0,-g_CONST*1*quad.mass])
    taub =  np.array([0,0,0])
 	 
    # Run the dynamic / time forward
