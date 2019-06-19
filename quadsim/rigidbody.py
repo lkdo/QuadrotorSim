@@ -1,13 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun 17 20:47:53 2019
+Part of the QuadrotorSim package
+Copyright (C) 2019  Luminita-Cristiana Totu
+Contact: luminita.totu@gmail.com
 
-@author: Luminita-Cristiana Totu
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this package, in a file called LICENSE.  
+If not, see <https://www.gnu.org/licenses/>.
+	
 """
 
 import numpy as np
-from constants import g_CONST
-from utils import SkS
+import utils as ut
 
 class RigidBody:
   """ Holds the minimum number of states and parameters 
@@ -48,15 +61,14 @@ class RigidBody:
     d_pos = np.dot(self.Rb2e,self.Vb)  
     
     # dRb2e/dt = Rb2e*Sks(Ob)
-    d_Rb2e = np.dot(self.Rb2e,SkS(self.Ob)) 
+    d_Rb2e = np.dot(self.Rb2e,ut.SkS(self.Ob)) 
     
-    # dVb/dt =  -Sks(Ob)*Vb + Re2b*ge + 1/m*Fb + noise
-    d_Vb = ( -np.dot(SkS(self.Ob),self.Vb) +  
-                 np.dot(self.Rb2e.transpose(),[0, 0, g_CONST]) + 
+    # dVb/dt =  -Sks(Ob)*Vb + 1/m*Fb
+    d_Vb = ( -np.dot(ut.SkS(self.Ob),self.Vb) +  
                  1/self.mass*Fb )
     
-    # dOb/dt = I^(-1)*(-SkS(Ob)*I*Ob + taub) + noise
-    d_Ob = ( np.dot(np.linalg.inv(self.I), np.dot(-SkS(self.Ob),
+    # dOb/dt = I^(-1)*(-SkS(Ob)*I*Ob + taub)
+    d_Ob = ( np.dot(np.linalg.inv(self.I), np.dot(-ut.SkS(self.Ob),
                   np.dot(self.I,self.Ob)) + taub ) )
     
     ## Integrate for over dt
