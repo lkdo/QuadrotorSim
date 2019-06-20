@@ -186,6 +186,11 @@ class rigidbody_q:
                   +self.q[1]*self.omegab[1]+self.q[0]*self.omegab[2])
             ])*0.5
         
+        #tmp = self.q[0]*np.identity(3)+ut.skew(self.q[1:3+1])
+        #d_q=np.dot( np.array([ -self.q[1:3+1], tmp[0,:],tmp[1,:],tmp[2,:] ]), 
+        #            np.array([0,self.omegab[0],self.omegab[1],self.omegab[2])
+        #           )  
+        
         # dVb/dt = -Sks(Ob)*Vb + 1/m*Fb
         d_vb = -np.dot(ut.skew(self.omegab),self.vb) + 1/self.mass*fb 
     
