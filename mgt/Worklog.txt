@@ -13,6 +13,12 @@
    - went through roughly half of PEP8, at some point to continue
    - updated the mgt sheet, plenty of tasks for tomorrow :)
 
-
+20/06
+   - worked on the looger
+   - added the quaternions ( maybe need more documentation here, and look at numerically stable integration  see if I can do better, but low prio for now)
+   - worked on testcases 
+   - worked a bit on style, changed more variables to lower case 
+   - started to look on timeit 
+   - short day, not a bad day
 
     

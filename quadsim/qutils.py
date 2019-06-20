@@ -27,12 +27,12 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import math
 
-def SkS(X):
-    """  Returns the Ske-symmetric matrix form of the input vector """
+def skew(X):
+    """  Returns the skew-symmetric matrix form of the input vector """
         
     return np.array([[0,-X[3-1],X[2-1]],[X[3-1],0,-X[1-1]],[-X[2-1],X[1-1],0]])
 
-def R2EXYZ(R):
+def rotm2exyz(R):
     """ Transforms a rotation matrix to Euler X-Y-Z (1-2-3) angles
     
     That is input matrix R = Rz(phi)*Ry(theta)*Rx(psi), 
@@ -68,3 +68,20 @@ def R2EXYZ(R):
             theta = -math.pi/2
             psi = -phi + math.atan2(-R[1-1,2-1],R[1-1,3-1])
         return np.array([psi,theta,phi])
+
+def quat2rotm(q): 
+    """ Takes a quaternion and returns the rotation matrix"""
+    
+    return np.array([
+                      [ q[0]**2+q[1]**2-q[2]**2-q[3]**2,
+                       2*(q[1]*q[2]-q[0]*q[3]), 
+                       2*(q[1]*q[3]+q[0]*q[2])   ],
+                      [ 2*(q[1]*q[2]+q[0]*q[3]),
+                        (q[0]**2-q[1]**2+q[2]**2-q[3]**2),
+                        2*(-q[0]*q[1]+q[2]*q[3]) ],
+                      [ 2*(q[1]*q[3]-q[0]*q[2]), 
+                        2*(q[2]*q[3]+q[0]*q[1]),
+                        q[0]**2+q[3]**2-q[2]**2-q[1]**2 ] 
+                    ])  
+ 
+ 

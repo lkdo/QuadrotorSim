@@ -27,12 +27,12 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Plotter:
+class plotter:
     """ Handles the plotting from a logger object  """
 
-    def plot_RigidBody(self, log):
+    def plot_rigidbody(self, log):
         fig, ax_lst = plt.subplots(nrows=3, ncols=1) 
-        fig.suptitle('RB Position Plot')  
+        fig.suptitle('Rigid Body Position Plot')  
      
         time = np.asarray(log.RigidBodyLogger_time)
         pos = np.asarray(log.RigidBodyLogger_pos)
@@ -43,7 +43,6 @@ class Plotter:
         ax_lst[1].plot( time, pos[:,1], marker = "o" )
         ax_lst[1].set_title("Y-axis")
      
-        # minus on the z-axis because of the NED convention
-        ax_lst[2].plot( time, -pos[:,2], marker = "o" ) 
+        ax_lst[2].plot( time, pos[:,2], marker = "o" ) 
         ax_lst[2].set_title("Z-axis")
      

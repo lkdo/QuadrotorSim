@@ -17,7 +17,7 @@
 # along with this package, in a file called LICENSE.
 # If not, see <https://www.gnu.org/licenses/>.
 
-""" This module implements the Graphical Plotter """
+""" This module implements the logging functionality """
 
 __version__ = "0.1"
 __author__ = "Luminita-Cristiana Totu"
@@ -26,26 +26,63 @@ __license__ = "GNU GPLv3"
 
 
 import numpy as np
-import utils as ut
+import os 
 
-class Logger:
+class logger:
     """ This class implements logging functionality """
   
-    def __init__(self, baseName, runName):
-        self.baseName = baseName
-        self.runName = runName
+    def __init__(self, location, basename):
+        self.location = location
+        self.basename = basename
      
-        self.RigidBodyLogger_time = []
-        self.RigidBodyLogger_pos = []
-        self.RigidBodyLogger_euler = []
+        self.rb_logger_time = []
+        self.rb_logger_pos = []
+        self.rb_logger_euler = []
+        self.rb_logger_vb = []
+        self.rb_logger_omegab = []
      
-    def log_RigidBody(self, t, RB):
-        self.RigidBodyLogger_time.append(t)   
-        self.RigidBodyLogger_pos.append(RB.pos)
-        self.RigidBodyLogger_euler.append(ut.R2EXYZ(np.transpose(RB.Rb2e)))
+    def log_rigidbody(self, t, rb):
+        
+        self.rb_logger_time.append(t)
+        
+        self.rb_logger_pos.append(rb.pos)
+        
+        self.rb_logger_euler.append(rb.euler_xyz())
+        
+        self.rb_logger_vb.append(rb.vb)
+        
+        self.rb_logger_omegab.append(rb.omegab)
      
-    def print_RigidBody(self):
-        for i in range(len(self.RigidBodyLogger_time)):
-            print(self.RigidBodyLogger_time[i],self.RigidBodyLogger_pos[i],
-                  self.RigidBodyLogger_euler[i])
+    def print_rigidbody(self):
+        
+        print("time ","position ", "euler_XYZ")
+        for i in range(len(self.rb_logger_time)):
+            print( self.rb_logger_time[i],self.rb_logger_pos[i],
+                   self.rb_logger_euler[i], self.rb_logger_vb,
+                   self.rb_logger_omegab )
+
+    def log2file_rigidbody(self):
+        
+        location_rb = self.location + "/" + "rigidbody"
+        
+        if not os.path.exists(location_rb):
+            os.makedirs(location_rb)
+    
+        fullname = location_rb + "/" +  self.basename + ".txt"
+        with open(fullname,"w") as f:
+            f.write("time position euler_xyz vb omegab \n")
+            for i in range(len(self.rb_logger_time)):
+                c1 = np.array2string(self.rb_logger_time[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.rb_logger_pos[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c3 = np.array2string(self.rb_logger_euler[i],precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c4 = np.array2string(self.rb_logger_vb[i],precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c5 = np.array2string(self.rb_logger_omegab[i],precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
+                f.write(fullline)
         
