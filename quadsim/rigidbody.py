@@ -34,7 +34,7 @@ import qutils as ut
 class rigidbody:
     """ Holds the minimum number of states and parameters 
     to describe a Rigid Body, and implements the kinematics
-    using rotation matrices. Works with NED coordinates. 
+    using rotation matrices. 
     """
 	
     def __init__(self,pos,rotmb2e,vb,omegab,mass,I):

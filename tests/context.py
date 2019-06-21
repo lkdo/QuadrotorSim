@@ -32,3 +32,4 @@ import rigidbody as rb
 import plotter as plt
 import logger as log
 import qutils as ut
+import quadftau as qftau
