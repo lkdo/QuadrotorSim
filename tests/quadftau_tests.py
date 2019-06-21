@@ -25,6 +25,7 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 import numpy as np
+import os
 
 from context import ut
 from context import qftau
@@ -33,51 +34,56 @@ from context import qftau
 m1_omegar2ftau = qftau.Omegar2FTau(0.05,0.005022,1.8580*(10**-5))
 
 def unitttest_template_A():
-    print("\nUnit Test %s: " % u_name)
-    print("####################################################")
+    file.write("\n\nUnit Test %s: \n" % u_name)
+    file.write("####################################################\n")
     try:
-        print("omega_r = %s" % np.array2string(omegar, precision = 8))
+        file.write("omega_r = %s\n" % np.array2string(omegar, precision = 8))
         f, tau = m1_omegar2ftau.omegar2ftau(omegar)
     
-        print("f = %s " % np.array2string(f))
-        print("tau = %s" % np.array2string(tau)) 
+        file.write("f = %s\n" % np.array2string(f))
+        file.write("tau = %s\n" % np.array2string(tau)) 
     
         omegar_2 = m1_omegar2ftau.ftau2omegar(f,tau)
-        print("omega_r = %s" % np.array2string(omegar_2, precision = 8))
+        file.write("omega_r = %s\n" % np.array2string(omegar_2, precision = 8))
     except Exception as e:  
-        print("TEST FAILED: %s" % e)
+        file.write("TEST FAILED: %s\n" % e)
     else:
         diff = omegar - omegar_2
         if ( np.linalg.norm(diff) > 0.000001 ):
-            print("TEST FAILED: %s != %s" % (omegar, omegar_2) )
-        else: 
-            print("Test passed")    
+            file.write("TEST FAILED: %s != %s\n" % (omegar, omegar_2) )
     
-u_name = "0001_tau_zero"
-omegar = np.array([100,100,100,100])   
-unitttest_template_A()
+# Create a file for these tests
+location_rb = "testresults" + "/" + "quadftau"
+if not os.path.exists(location_rb):
+    os.makedirs(location_rb)
+fullname = location_rb + "/" + "batch_01" + ".txt"
 
-u_name = "0002_taux" # roll positive
-omegar = np.array([100,200,100,0])  
-unitttest_template_A()
+with open(fullname,"w") as file:
+            
+    u_name = "0001_tau_zero"
+    omegar = np.array([100,100,100,100])   
+    unitttest_template_A()
 
-u_name = "0003_taux_minus" # roll negative
-omegar = np.array([100,0,100,200])   
-unitttest_template_A()
+    u_name = "0002_taux" # roll positive
+    omegar = np.array([100,200,100,0])  
+    unitttest_template_A()
 
-u_name = "0004_tauy" #pitch positive 
-omegar = np.array([0,100,200,100])   
-unitttest_template_A()
+    u_name = "0003_taux_minus" # roll negative
+    omegar = np.array([100,0,100,200])   
+    unitttest_template_A()
 
-u_name = "0004_tauy_minus" #pitch negative 
-omegar = np.array([200,100,0,100])   
-unitttest_template_A()
+    u_name = "0004_tauy" #pitch positive 
+    omegar = np.array([0,100,200,100])   
+    unitttest_template_A()
 
-u_name = "0004_tauz" #yaw positive 
-omegar = np.array([200,100,200,100])
-unitttest_template_A()
+    u_name = "0004_tauy_minus" #pitch negative 
+    omegar = np.array([200,100,0,100])   
+    unitttest_template_A()
 
-u_name = "0004_tauz_minus" #yaw negative 
-omegar = np.array([100,200,100,200])
-unitttest_template_A()
+    u_name = "0004_tauz" #yaw positive 
+    omegar = np.array([200,100,200,100])
+    unitttest_template_A()
 
+    u_name = "0004_tauz_minus" #yaw negative 
+    omegar = np.array([100,200,100,200])
+    unitttest_template_A()
