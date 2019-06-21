@@ -82,9 +82,11 @@ Kaero = np.array([  [-10.2506, -0.3177, -0.4332],
                     [-7.7050, -7.7050, -7.5530] 
                  ])*10**-7
 
-radius_cf = 0.045 # from center of mass to rotor, meters 
+radius = 0.045 # from center of mass to rotor, meters 
 
-mass_cf = 0.028 # kg
+mass = 0.028 # kg
+
+kappa = 1.88*(10**-8)
 
 def input2ftau(cmd, rotmb2e, vb):
         """ cmd is a 4 vector, each with values from 0 to 65535  
@@ -119,7 +121,7 @@ def input2ftau(cmd, rotmb2e, vb):
         # total force
         fb = ( np.array([0,0,ft1+ft2+ft3+ft4]) # thrust  
                + np.dot(np.transpose(rotmb2e),
-                        np.array([0,0,-mass_cf*cts.g_CONST])) 
+                        np.array([0,0,-mass*cts.g_CONST])) 
                + fba ) # aerodynamic forces 
         
         taur1 = thrust2torque_i(ft1)
@@ -127,8 +129,8 @@ def input2ftau(cmd, rotmb2e, vb):
         taur3 = thrust2torque_i(ft3)
         taur4 = thrust2torque_i(ft4)
         
-        taub_x = (ft2 - ft4)*radius_cf   # rolling moment 
-        taub_y = (ft3 - ft1)*radius_cf   # pitching moment 
+        taub_x = (ft2 - ft4)*radius   # rolling moment 
+        taub_y = (ft3 - ft1)*radius   # pitching moment 
         taub_z = taur1 + taur3 - taur2 - taur4 # yawing moment 
         
         return (fb, np.array([taub_x,taub_y,taub_z]))
