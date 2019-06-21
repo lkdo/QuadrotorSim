@@ -36,13 +36,15 @@ def unitttest_template_A():
     file.write("####################################################\n")
     try:
         file.write("cmd = %s\n" % np.array2string(cmd))
-        fb, taub = qftau_cf.input2ftau(cmd, np.identity(3), np.array([0,0,0]))
+        fb, taub = qftau_cf.input2ftau(cmd, np.identity(3), 
+                                       np.array([1,1,1]))
 
         file.write("fb = %s\n" % np.array2string(fb))
         file.write("taub = %s\n" % np.array2string(taub)) 
    
     except Exception as e:  
         file.write("TEST FAILED: %s\n" % e)
+
    
 # Create a file for these tests
 location_rb = "testresults" + "/" + "quadftau_cf"
@@ -93,3 +95,26 @@ with open(fullname,"w") as file:
     u_name = "0010_cmd_yawing_neg"
     cmd = np.array([38000,38000+1000,38000,38000+1000])
     unitttest_template_A()
+    
+    u_name = "0100_test_k_ct"
+    # Test to check the relation 
+    # f_thrust = sum_i ct * omegar_i^2
+    file.write("\n\nUnit Test %s: \n" % u_name)
+    file.write("####################################################\n")
+    N = 1000
+    thrust = np.zeros(N)
+    sum_omegar = np.zeros(N)
+    for i in range(N):
+        cmd = 1000 + np.random.rand(4)*65535
+        thrust[i] = qftau_cf.input2thrust(cmd)
+        sum_omegar[i] = ( qftau_cf.input2omegar_i(cmd[0])
+                       + qftau_cf.input2omegar_i(cmd[1])
+                       + qftau_cf.input2omegar_i(cmd[1])
+                       + qftau_cf.input2omegar_i(cmd[2]) )
+            
+    k_mean = np.mean(thrust/sum_omegar)
+    k_std = np.std(thrust/sum_omegar)
+    file.write("k estimate is %s with std %s. \n" % (k_mean, k_std))
+                  
+           
+        
