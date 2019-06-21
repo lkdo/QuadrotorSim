@@ -21,4 +21,5 @@
    - started to look on timeit 
    - short day, not a bad day
 
-    
+21/06
+   - rigid body with rotm is fastes, but qith quaternions is more precise, by looking at Test Cases 110 & 111, oy

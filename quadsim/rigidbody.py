@@ -140,7 +140,7 @@ class rigidbody_q:
         """ Position vector, float in R3, meters """
         
         self.q = q
-        """ quaternion   """
+        """ quaternion, in the form [ scalar vector3 ]   """
         
         self.vb = vb 
         """ velocity vector, float in R3, m/s """     
@@ -171,10 +171,15 @@ class rigidbody_q:
     def run_quadrotor(self,dt,fb,taub):
         """ Dynamic/Differential equations for rigid body motion/flight """
     
-        # dpos/dt = Ve = Rb2e*Vb 
+        # dpos/dt = ve = rotmb2e*vb 
         d_pos = np.dot(ut.quat2rotm(self.q),self.vb) 
     
-        # equation for body attitude, quaternion
+        # q = [ s ] = [ s v1 v2 v3]^T
+        #     [ v ]
+        # dq/dt = 0.5*[      -v        ] * omegab
+        #             [  sI3 + skew(v) ] 
+        
+        # version 1, unfolded - fastest, but still lower than rotm
         d_q=np.array(
             [(-self.q[1]*self.omegab[0]
                  -self.q[2]*self.omegab[1]-self.q[3]*self.omegab[2]),
@@ -186,15 +191,18 @@ class rigidbody_q:
                   +self.q[1]*self.omegab[1]+self.q[0]*self.omegab[2])
             ])*0.5
         
-        #tmp = self.q[0]*np.identity(3)+ut.skew(self.q[1:3+1])
-        #d_q=np.dot( np.array([ -self.q[1:3+1], tmp[0,:],tmp[1,:],tmp[2,:] ]), 
-        #            np.array([0,self.omegab[0],self.omegab[1],self.omegab[2])
-        #           )  
+        # version 2, more compact but slower than version 1
+        #d_q = 0.5*np.dot(np.block([[dq1],[dq2]]),self.omegab)
+        #d_q = 0.5*np.dot(
+        #        np.block([[-self.q[1:3+1]],
+        #                  [self.q[0]*np.identity(3)+ut.skew(self.q[1:3+1])]]),
+        #        self.omegab
+        #                )
         
-        # dVb/dt = -Sks(Ob)*Vb + 1/m*Fb
+        # dvb/dt = -skew(omegab)*vb + 1/m*fb
         d_vb = -np.dot(ut.skew(self.omegab),self.vb) + 1/self.mass*fb 
     
-        # dOb/dt = I^(-1)*(-SkS(Ob)*I*Ob + taub)
+        # domegab/dt = I^(-1)*(-skew(omegab)*I*omegabb + taub)
         d_omegab = (np.dot(
                        self.invI, 
                        np.dot(

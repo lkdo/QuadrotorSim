@@ -81,17 +81,19 @@ dt_log = 1       # seconds
 Fb = np.array([0.01,0.01,0.01])
 taub = np.array([0.01,0.01,0.01])
 
+N = 100  # number of speed tests
+
 name = "1000_rigidbody_speedcheck"
-print("Running Test Case: %s \n" % name)
+print("\nRunning Test Case: %s " % name)
 logger = log.logger("testresults",name) 
 timer_rigidbody=timeit.timeit(testcase_template_B,
-                              number=100,globals=globals())
-print("Average time for rigidbody class %s" % timer_rigidbody)
+                              number=N,globals=globals())
+print("Average time for rigidbody class %s \n" % (timer_rigidbody/N))
 
 # Test zero forces and moments 
 name = "1001_rigidbody_q_speedcheck"
-print("Running Test Case: %s \n" % name)
+print("Running Test Case: %s " % name)
 logger = log.logger("testresults",name)
 timer_rigidbody_q=timeit.timeit(testcase_template_C,
-                                number=100,globals=globals())
-print("Average time for rigidbody_q class %s" % timer_rigidbody_q)
+                                number=N,globals=globals())
+print("Average time for rigidbody_q class %s \n" % (timer_rigidbody_q/N))
