@@ -84,4 +84,19 @@ def quat2rotm(q):
                         q[0]**2+q[3]**2-q[2]**2-q[1]**2 ] 
                     ])  
  
- 
+class FirstOrderSystem:
+    """ implements a first order system 
+    
+    dx(t)/dt = a*x(t) + b*u(t)
+    """
+    
+    def __init__(self, a, b, x0):
+        
+        self.a = a
+        self.b = b
+        self.x = x0
+         
+    def run(self, u, dt):
+         
+        dx = self.a*self.x + self.b*u
+        self.x = self.x + dx*dt

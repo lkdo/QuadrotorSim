@@ -28,62 +28,68 @@ import numpy as np
 import os
 
 from context import ut
-from context import qftau
-
-# Values from the Crazyflie    
-m1_omegar2ftau = qftau.Omegar2FTau(0.05,0.005022,1.8580*(10**-5))
+from context import qftau_cf
+from context import cts
 
 def unitttest_template_A():
     file.write("\n\nUnit Test %s: \n" % u_name)
     file.write("####################################################\n")
     try:
-        file.write("omega_r = %s\n" % np.array2string(omegar, precision = 8))
-        f, tau = m1_omegar2ftau.omegar2ftau(omegar)
-    
-        file.write("f = %s\n" % np.array2string(f))
-        file.write("tau = %s\n" % np.array2string(tau)) 
-    
-        omegar_2 = m1_omegar2ftau.ftau2omegar(f,tau)
-        file.write("omega_r = %s\n" % np.array2string(omegar_2, precision = 8))
+        file.write("cmd = %s\n" % np.array2string(cmd))
+        fb, taub = qftau_cf.input2ftau(cmd, np.identity(3), np.array([0,0,0]))
+
+        file.write("fb = %s\n" % np.array2string(fb))
+        file.write("taub = %s\n" % np.array2string(taub)) 
+   
     except Exception as e:  
         file.write("TEST FAILED: %s\n" % e)
-    else:
-        diff = omegar - omegar_2
-        if ( np.linalg.norm(diff) > 0.000001 ):
-            file.write("TEST FAILED: %s != %s\n" % (omegar, omegar_2) )
-    
+   
 # Create a file for these tests
-location_rb = "testresults" + "/" + "quadftau"
+location_rb = "testresults" + "/" + "quadftau_cf"
 if not os.path.exists(location_rb):
     os.makedirs(location_rb)
 fullname = location_rb + "/" + "batch_01" + ".txt"
 
 with open(fullname,"w") as file:
             
-    u_name = "0001_tau_zero"
-    omegar = np.array([100,100,100,100])   
+    u_name = "0001_cmd_zero"
+    cmd = np.array([0,0,0,0])
     unitttest_template_A()
 
-    u_name = "0002_taux" # roll positive
-    omegar = np.array([100,200,100,0])  
+    u_name = "0002_cmd_verysmall"
+    cmd = np.array([800,800,800,800])
     unitttest_template_A()
-
-    u_name = "0003_taux_minus" # roll negative
-    omegar = np.array([100,0,100,200])   
+    
+    u_name = "0003_cmd_zerotreshold"
+    cmd = np.array([1000,1000,1000,1000])
     unitttest_template_A()
-
-    u_name = "0004_tauy" #pitch positive 
-    omegar = np.array([0,100,200,100])   
+    
+    u_name = "0004_cmd_hoovering"
+    cmd = np.array([37278,37278,37278,37278])
+    # this value is very close to the 36000 I used in my project
+    # so this is good news for the identification report 
     unitttest_template_A()
-
-    u_name = "0004_tauy_minus" #pitch negative 
-    omegar = np.array([200,100,0,100])   
+    
+    u_name = "0005_cmd_rolling_pos"
+    cmd = np.array([38000,38000+1000,38000,38000-1000])
     unitttest_template_A()
-
-    u_name = "0004_tauz" #yaw positive 
-    omegar = np.array([200,100,200,100])
+    
+    u_name = "0006_cmd_rolling_neg"
+    cmd = np.array([38000,38000-1000,38000,38000+1000])
     unitttest_template_A()
-
-    u_name = "0004_tauz_minus" #yaw negative 
-    omegar = np.array([100,200,100,200])
+    
+    u_name = "0007_cmd_pitching_pos"
+    cmd = np.array([38000-1000,38000,38000+1000,38000])
+    unitttest_template_A()
+    
+    u_name = "0008_cmd_pitching_neg"
+    cmd = np.array([38000+1000,38000,38000-1000,38000])
+    unitttest_template_A()
+    
+    u_name = "0009_cmd_yawing_pos"
+    cmd = np.array([38000+1000,38000,38000+1000,38000])
+    unitttest_template_A()
+    
+    u_name = "0010_cmd_yawing_neg"
+    cmd = np.array([38000,38000+1000,38000,38000+1000])
     unitttest_template_A()

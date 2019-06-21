@@ -82,13 +82,13 @@ class rigidbody:
         # dpos/dt = Ve = Rb2e*Vb 
         d_pos = np.dot(self.rotmb2e,self.vb)  
     
-        # dRb2e/dt = Rb2e*Sks(Ob)
+        # drotmb2e/dt = rotmb2e*skew(omegab)
         d_rotmb2e = np.dot(self.rotmb2e,ut.skew(self.omegab)) 
     
-        # dVb/dt =  -Sks(Ob)*Vb + 1/m*Fb
+        # dvb/dt =  -Sks(omegab)*vb + 1/m*fb
         d_vb = -np.dot(ut.skew(self.omegab),self.vb) + 1/self.mass*fb 
     
-        # dOb/dt = I^(-1)*(-SkS(Ob)*I*Ob + taub)
+        # domegab/dt = I^(-1)*(-skew(omegab)*I*omegab + taub)
         d_omegab = ( np.dot(
                             self.invI, 
                             np.dot(
