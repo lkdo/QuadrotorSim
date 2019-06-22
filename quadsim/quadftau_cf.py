@@ -71,6 +71,14 @@ def input2omegar_i(cmd):
         return 0
     else:
         return (0.04076521*cmd + 380.8359)
+
+def omegar2input(omegar):
+
+    cmd = (omegar - 380.8359)/0.04076521
+    cmd[cmd < 0] = 0
+    cmd[cmd > 65535] = 65535
+    
+    return cmd 
     
 def input2omegar(cmd):
     return np.array([ input2omegar_i(cmd[0]), input2omegar_i(cmd[1]),
@@ -161,13 +169,14 @@ def omegar2ftau(omega_rotors):
         
     return( np.array([0, 0, ftau[0]]), ftau[1:3+1] ) 
         
-def ftau2omegar(fb, taub) :
+def ftau2omegar(fb, taub, rotmb2e) :
     """ Given a desired ftau, returns required omega rotors  """
         
-    assert(fb[0] == 0), "Non-zero fx in ftau2omegar()"
-        
-    assert(fb[1] == 0), "Non-zero fy in ftau2omegar()"    
-        
+    #assert(fb[0] == 0), "Non-zero fx in ftau2omegar()"
+    #assert(fb[1] == 0), "Non-zero fy in ftau2omegar()"    
+    
+    fb = fb + np.dot(np.transpose(rotmb2e),np.array([0,0,+mass*cts.g_CONST]))
+            
     omega_r_square = np.dot(invGamma,np.block([fb[2],taub])) 
  
     assert ((omega_r_square < 0).sum() == 0), \
