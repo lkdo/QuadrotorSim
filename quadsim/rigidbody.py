@@ -131,7 +131,7 @@ class rigidbody:
 class rigidbody_q:
     """ Holds the minimum number of states and parameters 
     to describe a Rigid Body, and implements the kinematics
-    using quaternions. Works with NED coordinates. 
+    using quaternions.
     """
     
     def __init__(self,pos,q,vb,omegab,mass,I):
