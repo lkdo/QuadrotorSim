@@ -95,7 +95,34 @@ class FirstOrderSystem:
         self.a = a
         self.b = b
         self.x = x0
-         
+    
+    # The time constant, tau, of a first-order system is equal to the
+    # time it takes for the system's response to reach 63% of its 
+    # steady-state value for a step input (from 0 initial conditions) 
+    # or to decrease to 37% of the initial value 
+    # for a system's free response. 
+    # More generally, it represents the time scale for which the 
+    # dynamics of the system are significant
+    #
+    # The settling time, Ts, is the time required for the system output 
+    # to fall within a certain percentage (i.e. 2%) of the steady-state 
+    # value for a step input. The settling times for a first-order system 
+    # for the most common tolerances are provided in the table below. 
+    # Note that the tighter the tolerance, the longer the system response 
+    # takes to settle to within this band, as expected.
+    # 10% Ts = 2.3*self.tau 
+    # 5%  Ts = 3*self.tau
+    # 2%  Ts = 3.9*self.tau
+    # 1%  Ts = 4.6*self.tau
+
+    def tau(self):
+        if self.a < 0:
+            print(" WARNING: Not a stable FOS system, tau negative ")
+        return -1/self.a
+    
+    def kDC(self):
+        return -self.b/self.a
+    
     def run(self, u, dt):
          
         dx = self.a*self.x + self.b*u

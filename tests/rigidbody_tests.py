@@ -44,7 +44,7 @@ def unittest_template_A():
         quad.run_quadrotor(dt_sim, Fb, taub)
 
         # Logging frequency    
-        if ( abs(t % dt_log) < 0.00001 ):
+        if abs(t/dt_log - round(t/dt_log)) < 0.000001 :
              quad.check()
              logger.log_rigidbody(t, quad) 
 

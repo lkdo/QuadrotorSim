@@ -34,17 +34,26 @@ from context import cts
 def unitttest_template_A():
     file.write("\n\nUnit Test %s: \n" % u_name)
     file.write("####################################################\n")
+    
     rotmb2e = np.identity(3)
+               
     vb = np.array([0,0,0])
            
     try:
         file.write("cmd = %s\n" % np.array2string(cmd))
-        fb, taub = qftau_cf.input2ftau(cmd, rotmb2e, vb)
+        fb, taub = qftau_cf.input2ftau(cmd, vb)
 
+        # add gravity 
+        fb = fb + np.dot(np.transpose(rotmb2e),
+                         np.array([0,0,-qftau_cf.mass*cts.g_CONST]))
+        
         file.write("fb = %s\n" % np.array2string(fb))
         file.write("taub = %s\n" % np.array2string(taub)) 
    
-        omegar = qftau_cf.ftau2omegar(fb, taub, rotmb2e )
+        # remove gravity
+        fb = fb + np.dot(np.transpose(rotmb2e),
+                          np.array([0,0,+qftau_cf.mass*cts.g_CONST]))
+        omegar = qftau_cf.ftau2omegar(fb, taub)
         cmd_recovered = qftau_cf.omegar2input(omegar)
         file.write("cmd_recovered = %s\n" % np.array2string(cmd_recovered))
         
@@ -55,14 +64,24 @@ def unitttest_template_A():
 def unitttest_template_B():
     file_b.write("\n\nUnit Test %s: \n" % u_name)
     file_b.write("####################################################\n")
+    
+    rotmb2e = np.identity(3)
+    
     try:
         file_b.write("cmd = %s\n" % np.array2string(cmd))
-        fb, taub = qftau_cf.input2ftau_b(cmd, rotmb2e)
+        fb, taub = qftau_cf.input2ftau_b(cmd)
         
+        # add gravity 
+        fb = fb + np.dot( np.transpose(rotmb2e),
+                          np.array([0,0,-qftau_cf.mass*cts.g_CONST]) )
+       
         file_b.write("fb = %s\n" % np.array2string(fb))
         file_b.write("taub = %s\n" % np.array2string(taub)) 
 
-        omegar = qftau_cf.ftau2omegar(fb, taub, rotmb2e)
+        # remove gravity
+        fb = fb + np.dot(np.transpose(rotmb2e),
+                          np.array([0,0,+qftau_cf.mass*cts.g_CONST]))
+        omegar = qftau_cf.ftau2omegar(fb, taub)
         cmd_recovered = qftau_cf.omegar2input(omegar)
         file_b.write("cmd_recovered = %s\n" % np.array2string(cmd_recovered))
    
@@ -151,7 +170,7 @@ with open(fullname,"w") as file, open(fullname_b,"w") as file_b:
                   
     u_name = "0200_test_cTcQmodelcheck"
     rotmb2e = np.identity(3)
-    vb = np.array([1,0.5,1])
+    vb = np.array([0,0,0])
     with open(fullname_c,"w") as file_c, open(fullname_d,"w") as file_d:
         file_c.write("\n\nUnit Test %s: \n" % u_name)
         file_c.write("####################################################\n")
@@ -164,12 +183,12 @@ with open(fullname,"w") as file, open(fullname_b,"w") as file_b:
         err_taub = np.zeros((N,3))
         for i in range(N):
             cmd = 1000 + np.random.rand(4)*(65535-1000)
-            fb, taub = qftau_cf.input2ftau(cmd, rotmb2e, vb)
+            fb, taub = qftau_cf.input2ftau(cmd, vb)
             
             file_c.write("fb = %s\n" % np.array2string(fb))
             file_c.write("taub = %s\n" % np.array2string(taub)) 
            
-            fb_b, taub_b = qftau_cf.input2ftau_b(cmd, rotmb2e)
+            fb_b, taub_b = qftau_cf.input2ftau_b(cmd)
            
             file_d.write("fb = %s\n" % np.array2string(fb_b))
             file_d.write("taub = %s\n" % np.array2string(taub_b)) 
