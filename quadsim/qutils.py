@@ -43,7 +43,7 @@ def rotm2exyz(R):
     """
     
     if R[3-1,1-1]!=1 and R[3-1,1-1]!=-1:
-        theta1 = math.asin(R[3-1,1-1])
+        theta1 = -math.asin(R[3-1,1-1])
         theta2 = math.pi - theta1
         psi1 = math.atan2(R[3-1,2-1]/math.cos(theta1),
                           R[3-1,3-1]/math.cos(theta1))
