@@ -114,8 +114,15 @@ class rigidbody:
         self.omegab = X[16-1:18]
         
     def euler_xyz(self):
-        """ Returns the 1-2-3/x-y-z Euler angles for E2B """
-        return ut.rotm2exyz(np.transpose(self.rotmb2e))
+        """ Returns the 1-2-3/x-y-z Euler angles 
+         
+        These are equivalent to a rotation from the  earth-frame 
+        to the body frame. 
+        
+        The same matrix expressed coordinates from body frame 
+        to the earth frame.
+        """
+        return ut.rotm2exyz(self.rotmb2e)
    	
     def check(self):
         if ( abs(np.linalg.det(self.rotmb2e)-1)>0.001 or 
@@ -233,7 +240,7 @@ class rigidbody_q:
     
     def euler_xyz(self):
         """ Returns the 1-2-3/x-y-z Euler angles for E2B """
-        return ut.rotm2exyz(np.transpose(ut.quat2rotm(self.q)))
+        return ut.rotm2exyz(ut.quat2rotm(self.q))
     
     def check(self):
         if abs(np.linalg.norm(self.q)-1)>0.001:
