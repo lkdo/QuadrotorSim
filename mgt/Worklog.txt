@@ -47,6 +47,10 @@
 OKEII! Model finished. Tested and all. Looking good for a first iteration.
 
 Three possible directions of immediate interest:
-   a) Documentation - maybe in the form of slides, good for courses also  
+   a) Documentation - maybe in the form of slides, good for courses also  : USE LATEX + BEAMER 
    b) code cleanup / API interface , and that setup tingy - how to make the package , block diagrm drawing ...
    c) start buidling sensors interface , PID flight stabilization, so we can use it to something 
+   
+Started on a) and made a course on Udemy   
+           b) installed MikTex with Texworks,  imported the AAU beamer theme. Made first slides for the course introduction. Installed Inkscape.
+           c) installes OBS ( Open Broadcast Software ) for screen capturing and OpenShot for editing. And VLC media player.		   
