@@ -38,7 +38,8 @@ import numpy as np
 ######################################################################
 
 class QuadFTau_CF:
-
+    """ Model of the mini quadrotor the Crazyflie """
+    
     def __init__(self, std_ratio):
         """ std_ration should be in [0,1] """
         
@@ -54,6 +55,12 @@ class QuadFTau_CF:
         self.thrust2torque_coeff = [+0.005964552, +1.563383*10**-5]
         self.input2omegar_coeff = [+0.04076521, +380.8359]
         
+        # [kg· m2]
+        # Matrix of inertia, should be the same for + and x config
+        self.I = np.array([ [16.571710, 0.830806, 0.718277 ],
+                            [ 0.830806, 16.655602, 1.800197],
+                            [ 0.718277, 1.800197, 29.261652]])*10**-6 
+
         # Parameter variation, if requested
         if std_ratio > 0:
             self.radius += std_ratio*self.radius*np.random.randn(1)
@@ -179,7 +186,8 @@ class QuadFTau_CF:
          
         # total force
         fb = ( np.array([0,0,ft1+ft2+ft3+ft4]) # thrust  
-               + fba ) # aerodynamic forces 
+               + fba # aerodynamic forces s
+              ) 
             
         taur1 = self.thrust2torque_i(ft1)
         taur2 = self.thrust2torque_i(ft2)

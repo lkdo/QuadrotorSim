@@ -37,7 +37,7 @@ class rigidbody:
     using rotation matrices. 
     """
 	
-    def __init__(self,pos,rotmb2e,vb,omegab,mass,I):
+    def __init__(self, pos, rotmb2e, vb, omegab, mass, I):
         """ Initial values for the rigid body states."""
         
         self.pos = pos
@@ -142,6 +142,9 @@ class rigidbody_q:
         self.q = q
         """ quaternion, in the form [ scalar vector3 ]   """
         
+        self.rotmb2e = ut.quat2rotm(q)
+        """ the rotation matrix """
+        
         self.vb = vb 
         """ velocity vector, float in R3, m/s """     
        
@@ -222,9 +225,11 @@ class rigidbody_q:
   
         # unpack the vector state
         self.pos = X[1-1:3]
-        self.q = X[4-1:7]
+        self.q = X[4-1:7] 
+        self.rotmb2e = ut.quat2rotm(self.q)
         self.vb = X[8-1:10]
         self.omegab = X[11-1:13]
+        
     
     def euler_xyz(self):
         """ Returns the 1-2-3/x-y-z Euler angles for E2B """
@@ -232,6 +237,6 @@ class rigidbody_q:
     
     def check(self):
         if abs(np.linalg.norm(self.q)-1)>0.001:
-            print("Warning: norm of quaternions is %f\n" % 
+            print("Warning: norm of quaternions is %f. Normalizing. \n" % 
                   (np.linalg.norm(self.q)) 
-                 )
+                 )            

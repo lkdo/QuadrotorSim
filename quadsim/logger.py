@@ -28,61 +28,84 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import os 
 
-class logger:
+class Logger:
     """ This class implements logging functionality """
   
     def __init__(self, location, basename):
+        
         self.location = location
         self.basename = basename
      
-        self.rb_logger_time = []
-        self.rb_logger_pos = []
-        self.rb_logger_euler = []
-        self.rb_logger_vb = []
-        self.rb_logger_omegab = []
-     
+        self.rb_time = []
+        self.rb_pos = []
+        self.rb_ve = []
+        self.rb_euler = []
+        self.rb_vb = []
+        self.rb_omegab = []
+
+        self.cmd_time = []
+        self.cmd_rotors = []
+        
+    # rigid body elements 
+    ###################################################################
+    
     def log_rigidbody(self, t, rb):
         
-        self.rb_logger_time.append(t)
-        
-        self.rb_logger_pos.append(rb.pos)
-        
-        self.rb_logger_euler.append(rb.euler_xyz())
-        
-        self.rb_logger_vb.append(rb.vb)
-        
-        self.rb_logger_omegab.append(rb.omegab)
+        self.rb_time.append(t)
+        self.rb_pos.append(rb.pos)
+        self.rb_ve.append(rb.rotmb2e@rb.vb)  # ve
+        self.rb_euler.append(rb.euler_xyz())
+        self.rb_vb.append(rb.vb)
+        self.rb_omegab.append(rb.omegab)
      
-    def print_rigidbody(self):
-        
-        print("time ","position ", "euler_XYZ")
-        for i in range(len(self.rb_logger_time)):
-            print( self.rb_logger_time[i],self.rb_logger_pos[i],
-                   self.rb_logger_euler[i], self.rb_logger_vb,
-                   self.rb_logger_omegab )
-
     def log2file_rigidbody(self):
         
-        location_rb = self.location + "/" + "rigidbody"
-        
-        if not os.path.exists(location_rb):
-            os.makedirs(location_rb)
-    
-        fullname = location_rb + "/" +  self.basename + ".txt"
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+        fullname = location + "/" +  self.basename + "__rigidbody.txt"
         with open(fullname,"w") as f:
-            f.write("time position euler_xyz vb omegab \n")
-            for i in range(len(self.rb_logger_time)):
-                c1 = np.array2string(self.rb_logger_time[i], precision = 8, 
+            f.write("time position ve vb euler_xyz omegab \n")
+            for i in range(len(self.rb_time)):
+                c1 = np.array2string(self.rb_time[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c2 = np.array2string(self.rb_logger_pos[i], precision = 8, 
+                c2 = np.array2string(self.rb_pos[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c3 = np.array2string(self.rb_logger_euler[i],precision = 8, 
+                c3 = np.array2string(self.rb_euler[i],precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c4 = np.array2string(self.rb_logger_vb[i],precision = 8, 
+                c4 = np.array2string(self.rb_vb[i],precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c5 = np.array2string(self.rb_logger_omegab[i],precision = 8, 
+                c5 = np.array2string(self.rb_omegab[i],precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c6 = np.array2string(self.rb_ve[i],precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 
-                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
+                fullline = c1+"  "+c2+"  "+c6+"  "+c4+"  "+c3+"  "+c5+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)
+    
+    # Command elements 
+    ###################################################################
+    
+    def log_cmd(self, t, cmd_rotors):
         
+        self.cmd_time.append(t)
+        self.cmd_rotors.append(cmd_rotors)
+   
+    def log2file_cmd(self):
+        
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+        fullname = location + "/" +  self.basename + "__cmd.txt"
+        with open(fullname,"w") as f:
+            f.write("time cmd_rotors \n")
+            for i in range(len(self.cmd_time)):
+                c1 = np.array2string(self.cmd_time[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.cmd_rotors[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                
+                fullline = c1+"  "+c2+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
+                f.write(fullline)

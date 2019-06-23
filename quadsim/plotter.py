@@ -26,23 +26,99 @@ __license__ = "GNU GPLv3"
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os 
 
-class plotter:
+class Plotter:
     """ Handles the plotting from a logger object  """
-
+  
+    def __init__(self):
+        
+        self.big_font_size = 25
+        
+    def fig_style_1(self, fig, ax_lst):
+        
+        fig.set_size_inches(20, 15)
+        fig.set_dpi(100)
+        fig.subplots_adjust(hspace=0.25)
+        for ax in ax_lst:
+            ax.tick_params(axis='both', which='major', labelsize=20)
+            ax.tick_params(axis='both', which='minor', labelsize=10)
+            for item in [ax.title, ax.xaxis.label, ax.yaxis.label]:
+                     item.set_fontsize(self.big_font_size)
+            ax.grid(True)    
+        
     def plot_rigidbody(self, log):
-        fig, ax_lst = plt.subplots(nrows=3, ncols=1) 
-        fig.suptitle('Rigid Body Position Plot')  
-     
-        time = np.asarray(log.RigidBodyLogger_time)
-        pos = np.asarray(log.RigidBodyLogger_pos)
-     
+        
+        # saving location 
+        location = log.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+        
+        # Position plot
+        ###############################################################
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Rigid Body Position', fontsize = self.big_font_size)
+        time = np.asarray(log.rb_time)
+        pos = np.asarray(log.rb_pos)
+        
         ax_lst[0].plot( time, pos[:,0], marker = "o" )
         ax_lst[0].set_title("X-axis")
-     
         ax_lst[1].plot( time, pos[:,1], marker = "o" )
         ax_lst[1].set_title("Y-axis")
-     
         ax_lst[2].plot( time, pos[:,2], marker = "o" ) 
         ax_lst[2].set_title("Z-axis")
-     
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__rigidbody_pos.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+        
+        # Euler Angles plot 
+        ###############################################################
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Rigid Body Euler-XYZ', fontsize = self.big_font_size)
+        time = np.asarray(log.rb_time)
+        euler = np.asarray(log.rb_euler)
+        
+        ax_lst[0].plot( time, euler[:,0], marker = "o" )
+        ax_lst[0].set_title("X-axis rotation angle")
+        ax_lst[1].plot( time, euler[:,1], marker = "o" )
+        ax_lst[1].set_title("Y-axis rotation angle")
+        ax_lst[2].plot( time, euler[:,2], marker = "o" ) 
+        ax_lst[2].set_title("Z-axis rotation angle")
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename+ "__rigidbody_eulerXYZ.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+        
+    def plot_cmd(self, log):
+        
+        # saving location 
+        location = log.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+
+        # Position plot
+        fig, ax_lst = plt.subplots(4, 1)
+        fig.suptitle('Raw Rotor Command', fontsize = self.big_font_size)
+        time = np.asarray(log.cmd_time)
+        cmd_rotors = np.asarray(log.cmd_rotors)
+        
+        ax_lst[0].plot( time, cmd_rotors[:,0], marker = "o" )
+        ax_lst[0].set_title("Rotor 1")
+        ax_lst[1].plot( time, cmd_rotors[:,1], marker = "o" )
+        ax_lst[1].set_title("Rotor 2")
+        ax_lst[2].plot( time, cmd_rotors[:,2], marker = "o" ) 
+        ax_lst[2].set_title("Rotor 3")
+        ax_lst[3].plot( time, cmd_rotors[:,3], marker = "o" ) 
+        ax_lst[3].set_title("Rotor 4")
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__cmd_rotors.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+        

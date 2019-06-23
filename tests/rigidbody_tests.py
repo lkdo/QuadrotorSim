@@ -36,7 +36,7 @@ def unittest_template_A():
     
     print("Running Test Case: %s \n" % name)
     
-    logger = log.logger("testresults",name)
+    logger = log.Logger("testresults/rigidbody",name)
     
     for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    

@@ -55,10 +55,8 @@ def rotm2exyz(R):
                           R[1-1,1-1]/math.cos(theta2))
        
         # Choose one set of rotations
-        if  theta1 >= 0:
-            return np.array([psi1,theta1,phi1])
-        else:
-            return np.array([psi2,theta2,phi2])        
+        return np.array([psi1,theta1,phi1])
+        #return np.array([psi2,theta2,phi2])        
     else:
         phi = 0 # can be anything 
         if R[3-1,1-1] == -1:
