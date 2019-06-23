@@ -36,7 +36,7 @@ from context import plot
 def testcase_template_A():
     
     # Initialize the logger object 
-    fullname = "testresults/ftau_plus_rb/" + name
+    fullname = "testresults/ftau_plus_rigidbody/" + name
     logger = log.Logger(fullname, name)
     plotter = plot.Plotter()
     
@@ -89,7 +89,7 @@ dt_log = 1       # seconds
 #######################################################################
 name = "0000_hoover"
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
-index = int((5-dt_sim)/dt_sim) 
+index = int((5)/dt_sim) 
 cmd[index:,:] = 0
 qftau = qftau_cf.QuadFTau_CF(0)
 qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
@@ -101,7 +101,7 @@ testcase_template_A()
 name = "0010_roll_pos"
 dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
-index = int((5-dt_sim)/dt_sim) 
+index = int((5)/dt_sim) 
 cmd[index:,1] += 10
 cmd[index:,3] -= 10
 qftau = qftau_cf.QuadFTau_CF(0)
@@ -113,7 +113,7 @@ testcase_template_A()
 name = "0011_roll_neg"
 dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
-index = int((5-dt_sim)/dt_sim) 
+index = int((5)/dt_sim) 
 cmd[index:,1] -= 10
 cmd[index:,3] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
@@ -125,7 +125,7 @@ testcase_template_A()
 name = "0020_pitch_pos"
 dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
-index = int((5-dt_sim)/dt_sim) 
+index = int((5)/dt_sim) 
 cmd[index:,0] -= 10
 cmd[index:,2] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
@@ -137,9 +137,33 @@ testcase_template_A()
 name = "0021_pitch_neg"
 dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
-index = int((5-dt_sim)/dt_sim) 
+index = int((5)/dt_sim) 
 cmd[index:,0] += 10
 cmd[index:,2] -= 10
+qftau = qftau_cf.QuadFTau_CF(0)
+qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+testcase_template_A()
+
+# Test Case 
+#######################################################################
+name = "0031_yaw_pos"
+dt_log = 0.1
+cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
+index = int((5)/dt_sim) 
+cmd[index:,0] += 10
+cmd[index:,2] += 10
+qftau = qftau_cf.QuadFTau_CF(0)
+qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+testcase_template_A()
+
+# Test Case 
+#######################################################################
+name = "0031_yaw_neg"
+dt_log = 0.1
+cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
+index = int((5)/dt_sim) 
+cmd[index:,1] += 10
+cmd[index:,3] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
 qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
 testcase_template_A()

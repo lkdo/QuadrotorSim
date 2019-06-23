@@ -82,11 +82,11 @@ class Plotter:
         euler = np.asarray(log.rb_euler)
         
         ax_lst[0].plot( time, euler[:,0], marker = "o" )
-        ax_lst[0].set_title("X-axis rotation angle")
+        ax_lst[0].set_title("Roll - rotation around the X-axis")
         ax_lst[1].plot( time, euler[:,1], marker = "o" )
-        ax_lst[1].set_title("Y-axis rotation angle")
+        ax_lst[1].set_title("Pitch - rotation around the Y-axis")
         ax_lst[2].plot( time, euler[:,2], marker = "o" ) 
-        ax_lst[2].set_title("Z-axis rotation angle")
+        ax_lst[2].set_title("Yaw - rotation around the Z-axis")
         
         self.fig_style_1(fig, ax_lst)
         
