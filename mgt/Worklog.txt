@@ -26,7 +26,6 @@
 
 22/06
    - implemented the ftau model, using a paper. Cannot understand the rotors transfer functions though, how to use it. Is not stable. how to combine with the steady state relation also. so this part is out
-
 23/06
    -  I am testing a rolling command on the combined dynamic and kinematic model (ftau_plus_rb).
    Rolling is coupled with yawing and pitching. This is because ( nice to test, can be exercise to show on paper)
@@ -37,13 +36,17 @@
 				there is coupling between rolling and pitching and rolling and yawing
 				c) Even if the inertia matrix is diagonal, via the same rigid body eq for angular acceleration, there is coupling between rolling/yawing and pitching.
                 This can be further reduced by increasing Iyy element  				
-    However, the trends should be clear:
+    However, the trens should be clear:
           - I should have rolling angular velocity bigger than the othwer two, making euler roll also bigger  
           - Positive rolling should cause negative y-axis movement
-    Finished the same for pitch and yaw. Looking good. Good test cases.
 		  
     Quaternions are more numerically stable than rotm ( sam exp, same norm treshold for warning, rotm warning appears, quaternions warning not)
    
     Spyder 4.0.0b2 has code folding. Have installed it
+	
+OKEII! Model finished. Tested and all. Looking good for a first iteration.
 
-           
+Three possible directions of immediate interest:
+   a) Documentation - maybe in the form of slides, good for courses also  
+   b) code cleanup / API interface , and that setup tingy - how to make the package , block diagrm drawing ...
+   c) start buidling sensors interface , PID flight stabilization, so we can use it to something 
