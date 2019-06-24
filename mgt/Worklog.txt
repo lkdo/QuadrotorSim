@@ -54,3 +54,15 @@ Three possible directions of immediate interest:
 Started on a) and made a course on Udemy   
            b) installed MikTex with Texworks,  imported the AAU beamer theme. Made first slides for the course introduction. Installed Inkscape.
            c) installes OBS ( Open Broadcast Software ) for screen capturing and OpenShot for editing. And VLC media player.		   
+
+24/06/2019
+
+    - I need a visualisation attached to the physics, also an interactive one. So today I looked at Panda3D.
+    I installed a python 3.7 separately, and pip panda3d to get it. Run the first very simple tutorial to see it works.
+
+    I am now following the panda3d manual in order to perform the simple basic operations on the panda, that I need for the 
+    quadrotor: change position, change orientation. 
+
+    I am reading from the panda manual http://www.panda3d.org/manual 
+
+    
