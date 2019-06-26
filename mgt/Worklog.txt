@@ -65,4 +65,8 @@ Started on a) and made a course on Udemy
 
     I am reading from the panda manual http://www.panda3d.org/manual 
 
+25/06/2019
+  - Finished slides for lessons 1,2 and 3. finished videos for lessons 1 and 2. 
+ Finished transcript for lesson 3. 
+ 
     
