@@ -57,9 +57,9 @@ class QuadFTau_CF:
         
         # [kg· m2]
         # Matrix of inertia, should be the same for + and x config
-        self.I = np.array([ [16.571710, 0.830806, 0.718277 ],
-                            [ 0.830806, 16.655602, 1.800197],
-                            [ 0.718277, 1.800197, 29.261652]])*10**-6 
+        self.I = np.array([ [16.571710, -0.830806, -0.718277 ],
+                            [ -0.830806, 16.655602, -1.800197],
+                            [ -0.718277, -1.800197, 29.261652]])*10**-6 
 
         # Parameter variation, if requested
         if std_ratio > 0:
