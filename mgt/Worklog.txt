@@ -69,4 +69,20 @@ Started on a) and made a course on Udemy
   - Finished slides for lessons 1,2 and 3. finished videos for lessons 1 and 2. 
  Finished transcript for lesson 3. 
  
-    
+ 
+28/06/2019
+     working on slides for rigid body dynamics, going slow but going (lots of math and figures)
+     recorded video for L003. Now cleaning noise as per udemy feedback using:
+a) open mp4 in VLC, export sound track as mp3
+b) import mp3 in Audacity, clean noise
+c) export clean mp3, and use OpenSHot to patch it up again
+        
+
+PowerPoint has a nifty feature that turns mouse into a pointer (red glowy thing)
+WOuld be great for presentations, but I cannot open a pdf file in powerpoint
+There are converters, but payed mostly.
+Anyway, interesting feature !
+
+https://softwarerecs.stackexchange.com/questions/16761/presentation-software-with-a-cursor-looking-like-a-laser-pointer-instead-of-mous
+https://superuser.com/questions/1288195/cursor-options-for-adobe-reader-in-full-screen-mode
+Adobe little hand so annoying. Will try to use Sumatra instead. Solution.
