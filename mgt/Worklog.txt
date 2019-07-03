@@ -86,3 +86,18 @@ Anyway, interesting feature !
 https://softwarerecs.stackexchange.com/questions/16761/presentation-software-with-a-cursor-looking-like-a-laser-pointer-instead-of-mous
 https://superuser.com/questions/1288195/cursor-options-for-adobe-reader-in-full-screen-mode
 Adobe little hand so annoying. Will try to use Sumatra instead. Solution.
+
+30/06/2019
+Yesterday and today worked on the slides with 3d vectors and coordinate systems
+Ended up reading from Parviz Nikravesh to clarify some concepts.
+
+In terms of structure I think next I should work on the quaternions
+and euler angles, make a lecture on that.
+
+02/07/2019
+-------------
+Worked on lecture 4 video all day. Have to get better at this recording stuff. Lecture 05 is ready for recording almost, need to clean the transcript though. 
+
+03/07/2019
+-------------
+Finished recording lecture 05. Started working on slides for lecture 6, on the dynamics. Went to IKEA and and got two hole-board organizers for wall next to the desk to declutter. It looks really nice. 
