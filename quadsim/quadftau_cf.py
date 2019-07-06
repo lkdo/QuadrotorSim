@@ -321,7 +321,7 @@ class QuadFTau_CF_b:
     ###############################################################    
     
     def input2ftau(self,cmd):
-        """ cmd is a 4 vector, each with values from 0 to 65535  
+        """ cmd is a 4 vector, each with values from 0 to 65535  """
             
         omegar = self.input2omegar(cmd)
         fb, taub = self.omegar2ftau(omegar)
