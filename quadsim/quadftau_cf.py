@@ -40,7 +40,7 @@ import numpy as np
 class QuadFTau_CF:
     """ Model of the mini quadrotor the Crazyflie """
     
-    def __init__(self, std_ratio):
+    def __init__(self, std_ratio, plus = True):
         """ std_ration should be in [0,1] """
         
         self.radius = 0.045 # from center of mass to rotor, meters 
@@ -99,6 +99,9 @@ class QuadFTau_CF:
         self.cT = cT_mean
         self.cT_std = cT_std
         self.cQ = self.cT*self.thrust2torque_coeff[0] 
+		
+		# if plus is false we have cross 
+		self.plus = plus 
                   
     def input2thrust_i(self, cmd_i):
         """ Input is 0-65535, output (per rotor thrust) is in Newtons """
@@ -171,7 +174,17 @@ class QuadFTau_CF:
                      *
                     (3) CCW
             
-        """
+            CW  (2)     (1) CCW
+		          *    *
+		           \  /
+				    \/
+				    @@
+                    /\
+                   /  \
+		          *    *
+		   CCW  (3)    (4) CW
+		
+		"""
             
         # thrust on each rotor
         ft1 = self.input2thrust_i(cmd[0])
@@ -195,11 +208,16 @@ class QuadFTau_CF:
         taur3 = self.thrust2torque_i(ft3)
         taur4 = self.thrust2torque_i(ft4)
             
-        # total torques 
-        taub_x = (ft2 - ft4)*self.radius   # rolling moment 
-        taub_y = (ft3 - ft1)*self.radius   # pitching moment 
-        taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
-           
+        if self.plus
+            # total torques   		
+            taub_x = (ft2 - ft4)*self.radius   # rolling moment 
+            taub_y = (ft3 - ft1)*self.radius   # pitching moment 
+            taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
+        else # we have cross
+            taub_x = (ft2 + ft3 - ft1 - ft4)*sqrt(2)/2*self.radius   # rolling moment 
+            taub_y = (ft3 + ft4 - ft2 - ft1)*sqrt(2)/2*self.radius   # pitching moment 
+            taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
+		
         return (fb, np.array([taub_x,taub_y,taub_z]))
         
     
@@ -209,17 +227,48 @@ class QuadFTau_CF:
 
 class QuadFTau_CF_b:
     
-    def __init__(self, cT, cQ, radius, input2omegar_coeff):
-    
+    def __init__(self, cT, cQ, radius, input2omegar_coeff, plus = True):
+        """
+                     ^ x-axis
+                    (1) CCW
+                     *
+                     |
+            y-axis   |      CW
+            <(2)*----@----*(4) 
+            CW       |
+                     |
+                     *
+                    (3) CCW
+            
+            CW  (2)     (1) CCW
+		          *    *
+		           \  /
+				    \/
+				    @@
+                    /\
+                   /  \
+		          *    *
+		   CCW  (3)    (4) CW
+           
+        """
+        
         self.cT = cT
         self.cQ = cQ
     
+    
+    
         # Gamma * omega_motors^2 = [fb_z, taub_x, taub_y, taub_z]
-        self.Gamma = np.array([[cT, cT, cT, cT],
-                               [0, radius*cT, 0, -radius*cT],
-                               [-radius*cT, 0, radius*cT, 0],
-                               [-cQ, cQ, -cQ, cQ]])
-            
+		if plus 
+            self.Gamma = np.array([[cT, cT, cT, cT],
+                                   [0, radius*cT, 0, -radius*cT],
+                                   [-radius*cT, 0, radius*cT, 0],
+                                   [-cQ, cQ, -cQ, cQ]])
+        else
+            self.Gamma = np.array([[cT, cT, cT, cT],
+                                   [-radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT],
+                                   [-radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT],
+                                   [-cQ, cQ, -cQ, cQ]])
+		
         self.invGamma = np.linalg.inv(self.Gamma)
        
         self.input2omegar_coeff = input2omegar_coeff  
@@ -275,19 +324,6 @@ class QuadFTau_CF_b:
     
     def input2ftau(self,cmd):
         """ cmd is a 4 vector, each with values from 0 to 65535  
-            
-                     ^ x-axis
-                    (1) CCW
-                     *
-                     |
-            y-axis   |      CW
-            <(2)*----@----*(4) 
-            CW       |
-                     |
-                     *
-                    (3) CCW
-            
-        """
             
         omegar = self.input2omegar(cmd)
         fb, taub = self.omegar2ftau(omegar)
