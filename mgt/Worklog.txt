@@ -105,3 +105,8 @@ Finished recording lecture 05. Started working on slides for lecture 6, on the d
 04/07/2019
 ------------
 Working on slides lecture 6 dynamics. Tomorrow I go to Aalborg to return the computer. 
+
+07/07/2019
+-----------
+Funny day today. Worked on Lecture 7, and I have a transcript as well.
+Next, I started to look back at the code. Added some features and corrected bugs. Progressed on the 3D visualization part. 
