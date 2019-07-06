@@ -101,7 +101,7 @@ class QuadFTau_CF:
         self.cQ = self.cT*self.thrust2torque_coeff[0] 
 		
 		# if plus is false we have cross 
-		self.plus = plus 
+        self.plus = plus 
                   
     def input2thrust_i(self, cmd_i):
         """ Input is 0-65535, output (per rotor thrust) is in Newtons """
@@ -208,12 +208,12 @@ class QuadFTau_CF:
         taur3 = self.thrust2torque_i(ft3)
         taur4 = self.thrust2torque_i(ft4)
             
-        if self.plus
+        if self.plus is True: 
             # total torques   		
             taub_x = (ft2 - ft4)*self.radius   # rolling moment 
             taub_y = (ft3 - ft1)*self.radius   # pitching moment 
             taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
-        else # we have cross
+        else: # we have cross
             taub_x = (ft2 + ft3 - ft1 - ft4)*sqrt(2)/2*self.radius   # rolling moment 
             taub_y = (ft3 + ft4 - ft2 - ft1)*sqrt(2)/2*self.radius   # pitching moment 
             taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
@@ -255,15 +255,13 @@ class QuadFTau_CF_b:
         self.cT = cT
         self.cQ = cQ
     
-    
-    
         # Gamma * omega_motors^2 = [fb_z, taub_x, taub_y, taub_z]
-		if plus 
+        if plus is True: 
             self.Gamma = np.array([[cT, cT, cT, cT],
                                    [0, radius*cT, 0, -radius*cT],
                                    [-radius*cT, 0, radius*cT, 0],
                                    [-cQ, cQ, -cQ, cQ]])
-        else
+        else:
             self.Gamma = np.array([[cT, cT, cT, cT],
                                    [-radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT],
                                    [-radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT],
