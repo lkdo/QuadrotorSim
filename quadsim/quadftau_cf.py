@@ -198,7 +198,7 @@ class QuadFTau_CF:
         # total torques 
         taub_x = (ft2 - ft4)*self.radius   # rolling moment 
         taub_y = (ft3 - ft1)*self.radius   # pitching moment 
-        taub_z = taur1 + taur3 - taur2 - taur4 # yawing moment 
+        taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
            
         return (fb, np.array([taub_x,taub_y,taub_z]))
         
@@ -218,7 +218,7 @@ class QuadFTau_CF_b:
         self.Gamma = np.array([[cT, cT, cT, cT],
                                [0, radius*cT, 0, -radius*cT],
                                [-radius*cT, 0, radius*cT, 0],
-                               [cQ, -cQ, cQ, -cQ]])
+                               [-cQ, cQ, -cQ, cQ]])
             
         self.invGamma = np.linalg.inv(self.Gamma)
        
