@@ -85,7 +85,7 @@ N = 100  # number of speed tests
 
 name = "1000_rigidbody_speedcheck"
 print("\nRunning Test Case: %s " % name)
-logger = log.logger("testresults",name) 
+logger = log.Logger("testresults",name) 
 timer_rigidbody=timeit.timeit(testcase_template_B,
                               number=N,globals=globals())
 print("Average time for rigidbody class %s \n" % (timer_rigidbody/N))
@@ -93,7 +93,7 @@ print("Average time for rigidbody class %s \n" % (timer_rigidbody/N))
 # Test zero forces and moments 
 name = "1001_rigidbody_q_speedcheck"
 print("Running Test Case: %s " % name)
-logger = log.logger("testresults",name)
+logger = log.Logger("testresults",name)
 timer_rigidbody_q=timeit.timeit(testcase_template_C,
                                 number=N,globals=globals())
 print("Average time for rigidbody_q class %s \n" % (timer_rigidbody_q/N))
