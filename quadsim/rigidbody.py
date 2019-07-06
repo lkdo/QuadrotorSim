@@ -246,4 +246,6 @@ class rigidbody_q:
         if abs(np.linalg.norm(self.q)-1)>0.001:
             print("Warning: norm of quaternions is %f. Normalizing. \n" % 
                   (np.linalg.norm(self.q)) 
-                 )            
+                 )
+            self.q = self.q /np.linalg.norm(self.q)
+            

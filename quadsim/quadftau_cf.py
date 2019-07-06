@@ -31,11 +31,11 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 import numpy as np
+import math
 
-
-######################################################################
+#####################################################
 # Julian Foerster's model 
-######################################################################
+#####################################################
 
 class QuadFTau_CF:
     """ Model of the mini quadrotor the Crazyflie """
@@ -139,7 +139,7 @@ class QuadFTau_CF:
       return np.dot(self.Kaero,vb)*np.sum(omegar)
         
     # Helper functions 
-    ###############################################################    
+    ##################################################
     
     def input2thrust(self,cmd):
         # thrust on each rotor
@@ -158,7 +158,7 @@ class QuadFTau_CF:
     
                 
     # "Main" function
-    ###############################################################    
+    ###################################################
         
     def input2ftau(self, cmd, vb):
         """ cmd is a 4 vector, each with values from 0 to 65535  
@@ -214,16 +214,16 @@ class QuadFTau_CF:
             taub_y = (ft3 - ft1)*self.radius   # pitching moment 
             taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
         else: # we have cross
-            taub_x = (ft2 + ft3 - ft1 - ft4)*sqrt(2)/2*self.radius   # rolling moment 
-            taub_y = (ft3 + ft4 - ft2 - ft1)*sqrt(2)/2*self.radius   # pitching moment 
+            taub_x = (ft2 + ft3 - ft1 - ft4)*math.sqrt(2)/2*self.radius   # rolling moment 
+            taub_y = (ft3 + ft4 - ft2 - ft1)*math.sqrt(2)/2*self.radius   # pitching moment 
             taub_z = -taur1 - taur3 + taur2 + taur4 # yawing moment 
 		
         return (fb, np.array([taub_x,taub_y,taub_z]))
         
     
-###############################################################
+####################################################
 # A slightly simplified model, good for inversion   
-###############################################################
+####################################################
 
 class QuadFTau_CF_b:
     
@@ -263,8 +263,10 @@ class QuadFTau_CF_b:
                                    [-cQ, cQ, -cQ, cQ]])
         else:
             self.Gamma = np.array([[cT, cT, cT, cT],
-                                   [-radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT],
-                                   [-radius*sqrt(2)/2*cT, -radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT, radius*sqrt(2)/2*cT],
+                                   [-radius*math.sqrt(2)/2*cT, radius*math.sqrt(2)/2*cT, 
+                                            radius*math.sqrt(2)/2*cT, -radius*math.sqrt(2)/2*cT],
+                                   [-radius*math.sqrt(2)/2*cT, -radius*math.sqrt(2)/2*cT, 
+                                           radius*math.sqrt(2)/2*cT, radius*math.sqrt(2)/2*cT],
                                    [-cQ, cQ, -cQ, cQ]])
 		
         self.invGamma = np.linalg.inv(self.Gamma)
@@ -318,7 +320,7 @@ class QuadFTau_CF_b:
         return cmd 
         
     # Final function (no aerodynamic component, drag is neglected)
-    ###############################################################    
+    #####################################################
     
     def input2ftau(self,cmd):
         """ cmd is a 4 vector, each with values from 0 to 65535  """
