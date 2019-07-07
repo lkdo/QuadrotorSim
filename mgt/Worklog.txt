@@ -106,7 +106,11 @@ Finished recording lecture 05. Started working on slides for lecture 6, on the d
 ------------
 Working on slides lecture 6 dynamics. Tomorrow I go to Aalborg to return the computer. 
 
-07/07/2019
+06/07/2019
 -----------
 Funny day today. Worked on Lecture 7, and I have a transcript as well.
 Next, I started to look back at the code. Added some features and corrected bugs. Progressed on the 3D visualization part. 
+
+07/07/2019
+-----------
+Worked more on the 3D model. Found out in Blender how to use textures at a basic level. Added some color textuure to the quadrotor to identify front and back. Corrected Lesson 3. Still have to do Lecture 5 and 6 corrections and record Lesson 7.
