@@ -114,8 +114,8 @@ class Panda3DApp(ShowBase):
         self.scene.setScale(0.25, 0.25, 0.25)
         self.scene.setPos(-8, 42, 0)
 		
-        self.quadrotor = self.loader.loadModel("./crazyflie2")
-        self.quadrotor.setScale(20, 20, 20)
+        self.quadrotor = self.loader.loadModel("../res/CF21")
+        self.quadrotor.setScale(1, 1, 1)
         self.quadrotor.reparentTo(self.render)
         self.quadrotor.setPos(0,0,3)
         if plus is True:
