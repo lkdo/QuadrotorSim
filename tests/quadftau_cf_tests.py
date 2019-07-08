@@ -27,7 +27,6 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import os
 
-from context import ut
 from context import qftau_cf
 from context import cts
 

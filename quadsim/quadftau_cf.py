@@ -43,13 +43,19 @@ class QuadFTau_CF:
     def __init__(self, std_ratio, plus = True):
         """ std_ration should be in [0,1] """
         
+        # if plus is false we have cross 
+        self.plus = plus 
+        
         self.radius = 0.045 # from center of mass to rotor, meters 
         self.mass = 0.028 # kg
-        self.Kaero = np.array([  [-10.2506, -0.3177, -0.4332],
-                                 [-0.3177, -10.2506, -0.4332],
-                                 [-7.7050, -7.7050, -7.5530] 
-                              ])*10**-7
-        
+        #self.Kaero = np.array([  [-10.2506, -0.3177, -0.4332],
+        #                         [-0.3177, -10.2506, -0.4332],
+        #                         [-7.7050, -7.7050, -7.5530] 
+        #                     ])*10**-7
+        self.Kaero = np.array([  [-9.1785, 0, 0],
+                                            [0, -9.1785, 0],
+                                            [0, 0, -10.311]  ])*10**-7
+
         self.input2thrust_coeff = [+ 2.130295*10**-11, +1.032633*10**-6, 
                               + 5.484560*10**-4]
         self.thrust2torque_coeff = [+0.005964552, +1.563383*10**-5]
@@ -57,10 +63,17 @@ class QuadFTau_CF:
         
         # [kg· m2]
         # Matrix of inertia, should be the same for + and x config
-        self.I = np.array([ [16.571710, -0.830806, -0.718277 ],
+        if self.plus is False :
+            # cross configuration 
+            self.I = np.array([ [16.571710, -0.830806, -0.718277 ],
                             [ -0.830806, 16.655602, -1.800197],
                             [ -0.718277, -1.800197, 29.261652]])*10**-6 
-
+        else:
+            # plus configuration  ( Benoit Landry)
+            self.I = np.array([ [2.3951, 0, 0 ],
+                                        [ 0, 2.3951, 0],
+                                        [ 0, 0, 3.23] ] )*10**-5 
+            
         # Parameter variation, if requested
         if std_ratio > 0:
             self.radius += std_ratio*self.radius*np.random.randn(1)
@@ -84,24 +97,25 @@ class QuadFTau_CF:
                       -self.input2omegar_coeff[1]/self.input2omegar_coeff[0] ]
         self.omegar2input_poly = np.poly1d(self.omegar2input_coeff)
     
-        # calculate cTcQ 
-        N = 1000
-        thrust = np.zeros(N)
-        omegar = np.zeros(N)
-        for i in range(N):
-            cmd = 1000 + np.random.rand(1)*(65535-1000)
-            thrust[i] = self.input2thrust_i(cmd)
-            omegar[i] = self.input2omegar_i(cmd)
-            
-        cT_mean = np.mean(thrust / omegar**2)
-        cT_std = np.std(thrust / omegar**2)
-    
-        self.cT = cT_mean
-        self.cT_std = cT_std
-        self.cQ = self.cT*self.thrust2torque_coeff[0] 
-		
-		# if plus is false we have cross 
-        self.plus = plus 
+        # calculate cT & cQ 
+        # Ns = 2000
+        # thrust = np.zeros(65535-Ns)
+        # omegar2 = np.zeros(65535-Ns)
+        # torque = np.zeros(65535-Ns)
+        # for i in range(65535-Ns):
+        #     cmd = Ns + i
+        #     thrust[i] = self.input2thrust_i(cmd)
+        #     omegar2[i] = self.input2omegar_i(cmd)**2
+        #     torque[i] = self.thrust2torque_i(thrust[i])
+        # self.cT = np.mean(thrust/omegar2)
+        # self.cT_std = np.std(thrust/omegar2)
+        # self.cQ = np.mean(torque/omegar2)
+        # self.cQ_std = np.std(torque/omegar2)
+        # print("cT={}, std={}  \n cQ={}, std={}".format (self.cT,self.cT_std, 
+        #                                                                           self.cQ, self.cQ_std))
+        
+        self.cT = 1.903*10**(-8)
+        self.cQ = 1.246*10**(-10)
                   
     def input2thrust_i(self, cmd_i):
         """ Input is 0-65535, output (per rotor thrust) is in Newtons """

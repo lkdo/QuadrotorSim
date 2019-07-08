@@ -39,8 +39,8 @@ from context import envir
 from context import ut
 from context import plot
 
-plus = True
-name = "Manual_Plus_Pitch"
+plus = False
+name = "Manual"
 
 class ReadKeys(DirectObject.DirectObject):
     
@@ -106,8 +106,9 @@ class Panda3DApp(ShowBase):
         ShowBase.__init__(self)
 		
         # Load the environment model.
-        self.scene = self.loader.loadModel("../res/BeachTerrain/BeachTerrain")
-    
+        # self.scene = self.loader.loadModel("../res/BeachTerrain/BeachTerrain")
+        self.scene = self.loader.loadModel("../models/environment") 
+           
 	    # Reparent the model to render.
         self.scene.reparentTo(self.render)
     
