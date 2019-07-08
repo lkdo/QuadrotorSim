@@ -37,7 +37,7 @@ class rigidbody:
     using rotation matrices. 
     """
 	
-    def __init__(self, pos, rotmb2e, vb, omegab, mass, I):
+    def __init__(self, pos, rotmb2e, ve, omegab, mass, I):
         """ Initial values for the rigid body states."""
         
         self.pos = pos
@@ -50,8 +50,11 @@ class rigidbody:
         ve - same vector in earth frame
         """
         
-        self.vb = vb 
-        """ velocity vector, float in R3, m/s """     
+        self.ve = ve 
+        """ velocity vector in earth frame, float in R3, m/s """     
+       
+        self.vb =np.transpose(self.rotmb2e)@self.ve
+        """ velocity vector in body frame, float in R3, m/s """     
        
         self.omegab = omegab 
         """angular velocity vector, float in R3, rad/s"""
@@ -79,14 +82,14 @@ class rigidbody:
     def run_quadrotor(self,dt,fb,taub):
         """ Dynamic/Differential equations for rigid body motion/flight """
     
-        # dpos/dt = Ve = Rb2e*Vb 
-        d_pos = np.dot(self.rotmb2e,self.vb)  
+        # dpos/dt = Ve
+        d_pos = self.ve  
     
         # drotmb2e/dt = rotmb2e*skew(omegab)
         d_rotmb2e = np.dot(self.rotmb2e,ut.skew(self.omegab)) 
     
-        # dvb/dt =  -Sks(omegab)*vb + 1/m*fb
-        d_vb = -np.dot(ut.skew(self.omegab),self.vb) + 1/self.mass*fb 
+        # dve/dt = 1/m*Rbe*fb
+        d_ve = 1/self.mass*self.rotmb2e@fb 
     
         # domegab/dt = I^(-1)*(-skew(omegab)*I*omegab + taub)
         d_omegab = ( np.dot(
@@ -102,16 +105,18 @@ class rigidbody:
         ## Integrate for over dt
     
         # Simple Euler, the step dt must be small
-        X = np.concatenate([self.pos, self.rotmb2e.reshape(-1), self.vb, 
+        X = np.concatenate([self.pos, self.rotmb2e.reshape(-1), self.ve, 
                             self.omegab])
-        dX = np.concatenate([ d_pos, d_rotmb2e.reshape(-1), d_vb, d_omegab ])
+        dX = np.concatenate([ d_pos, d_rotmb2e.reshape(-1), d_ve, d_omegab ])
         X = X + dt*dX
   
         # unpack the vector state
         self.pos = X[1-1:3]
         self.rotmb2e = X[4-1:12].reshape(3,3)
-        self.vb = X[13-1:15]
+        self.ve = X[13-1:15]
+        self.vb =np.transpose(self.rotmb2e)@self.ve
         self.omegab = X[16-1:18]
+        
         
     def euler_xyz(self):
         """ Returns the 1-2-3/x-y-z Euler angles 
@@ -141,7 +146,7 @@ class rigidbody_q:
     using quaternions.
     """
     
-    def __init__(self,pos,q,vb,omegab,mass,I):
+    def __init__(self,pos,q,ve,omegab,mass,I):
     
         self.pos = pos   
         """ Position vector, float in R3, meters """
@@ -152,8 +157,11 @@ class rigidbody_q:
         self.rotmb2e = ut.quat2rotm(q)
         """ the rotation matrix """
         
-        self.vb = vb 
-        """ velocity vector, float in R3, m/s """     
+        self.ve = ve 
+        """ velocity vector in earth frame, float in R3, m/s """     
+       
+        self.vb =np.transpose(self.rotmb2e)@self.ve
+        """ velocity vector in body frame, float in R3, m/s """     
        
         self.omegab = omegab 
         """angular velocity vector, float in R3, rad/s"""
@@ -181,8 +189,8 @@ class rigidbody_q:
     def run_quadrotor(self,dt,fb,taub):
         """ Dynamic/Differential equations for rigid body motion/flight """
     
-        # dpos/dt = ve = rotmb2e*vb 
-        d_pos = np.dot(ut.quat2rotm(self.q),self.vb) 
+        # dpos/dt = ve 
+        d_pos = self.ve
     
         # q = [ s ] = [ s v1 v2 v3]^T
         #     [ v ]
@@ -209,8 +217,8 @@ class rigidbody_q:
         #        self.omegab
         #                )
         
-        # dvb/dt = -skew(omegab)*vb + 1/m*fb
-        d_vb = -np.dot(ut.skew(self.omegab),self.vb) + 1/self.mass*fb 
+        # dve/dt = 1/m*Rbe*fb
+        d_ve = 1/self.mass*ut.quat2rotm(self.q)@fb 
     
         # domegab/dt = I^(-1)*(-skew(omegab)*I*omegabb + taub)
         d_omegab = (np.dot(
@@ -226,17 +234,17 @@ class rigidbody_q:
         ## Integrate for over dt
     
         # Simple Euler, the step dt must be small
-        X = np.concatenate([self.pos, self.q, self.vb, self.omegab])
-        dX = np.concatenate([ d_pos, d_q, d_vb, d_omegab ])
+        X = np.concatenate([self.pos, self.q, self.ve, self.omegab])
+        dX = np.concatenate([ d_pos, d_q, d_ve, d_omegab ])
         X = X + dt*dX
   
         # unpack the vector state
         self.pos = X[1-1:3]
         self.q = X[4-1:7] 
         self.rotmb2e = ut.quat2rotm(self.q)
-        self.vb = X[8-1:10]
+        self.ve = X[8-1:10]
+        self.vb =np.transpose(self.rotmb2e)@self.ve
         self.omegab = X[11-1:13]
-        
     
     def euler_xyz(self):
         """ Returns the 1-2-3/x-y-z Euler angles for E2B """

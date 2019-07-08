@@ -77,7 +77,7 @@ def testcase_template_A():
 pos = np.array([0,0,0])
 q = np.array([1,0,0,0])
 rotmb2e = ut.quat2rotm(q) 
-vb = np.array([0,0,0])
+ve = np.array([0,0,0])
 omegab = np.array([0,0,0])
 
 # Simulation parameters
@@ -92,7 +92,7 @@ cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
 cmd[index:,:] = 0
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 
@@ -105,7 +105,7 @@ index = int((5)/dt_sim)
 cmd[index:,1] += 10
 cmd[index:,3] -= 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
@@ -117,7 +117,7 @@ index = int((5)/dt_sim)
 cmd[index:,1] -= 10
 cmd[index:,3] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
@@ -129,7 +129,7 @@ index = int((5)/dt_sim)
 cmd[index:,0] -= 10
 cmd[index:,2] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
@@ -141,7 +141,7 @@ index = int((5)/dt_sim)
 cmd[index:,0] += 10
 cmd[index:,2] -= 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
@@ -153,7 +153,7 @@ index = int((5)/dt_sim)
 cmd[index:,0] += 10
 cmd[index:,2] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
@@ -165,5 +165,5 @@ index = int((5)/dt_sim)
 cmd[index:,1] += 10
 cmd[index:,3] += 10
 qftau = qftau_cf.QuadFTau_CF(0)
-qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)
+qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()

@@ -39,7 +39,8 @@ from context import envir
 from context import ut
 from context import plot
 
-plus = False
+plus = True
+name = "Manual_Plus_Pitch"
 
 class ReadKeys(DirectObject.DirectObject):
     
@@ -169,7 +170,6 @@ dt_vis = 1/60   # 60 frame per second
 
 # Test Case 
 #######################################################################
-name = "Manual_Flight_Cross_Pitch"
 cmd = 37278 * np.ones(4)
 qftau = qftau_cf.QuadFTau_CF(0,plus)
 qrb = rb.rigidbody_q(pos, q, vb, omegab, qftau.mass, qftau.I)

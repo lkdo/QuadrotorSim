@@ -53,9 +53,9 @@ class Logger:
         
         self.rb_time.append(t)
         self.rb_pos.append(rb.pos)
-        self.rb_ve.append(rb.rotmb2e@rb.vb)  # ve
+        self.rb_vb.append(rb.vb)  
         self.rb_euler.append(rb.euler_xyz())
-        self.rb_vb.append(rb.vb)
+        self.rb_ve.append(rb.ve)
         self.rb_omegab.append(rb.omegab)
      
     def log2file_rigidbody(self):

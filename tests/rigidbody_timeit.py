@@ -34,7 +34,7 @@ from context import ut
 
 def testcase_template_B():
     """ Testcase template for initial conditions and constant input """
-    quad = rb.rigidbody(pos,rotmb2e,vb,omegab,mass,I)
+    quad = rb.rigidbody(pos,rotmb2e,ve,omegab,mass,I)
     
     for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    
@@ -50,7 +50,7 @@ def testcase_template_B():
 def testcase_template_C():
     """ Testcase template for initial conditions and constant input """
     
-    quad = rb.rigidbody_q(pos,q,vb,omegab,mass,I)
+    quad = rb.rigidbody_q(pos,q,ve,omegab,mass,I)
     
     for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    
@@ -68,7 +68,7 @@ def testcase_template_C():
 pos = np.array([0,0,0])
 q = np.array([1.0,0.0,0.0,0.0])
 rotmb2e = ut.quat2rotm(q)
-vb = np.array([0,0,0])
+ve= np.array([0,0,0])
 omegab = np.array([0,0,0])
 mass = 1
 I = np.identity(3)
