@@ -240,7 +240,7 @@ class rigidbody_q:
   
         # unpack the vector state
         self.pos = X[1-1:3]
-        self.q = X[4-1:7] 
+        self.q = X[4-1:7] / np.linalg.norm(X[4-1:7])
         self.rotmb2e = ut.quat2rotm(self.q)
         self.ve = X[8-1:10]
         self.vb =np.transpose(self.rotmb2e)@self.ve
@@ -252,8 +252,8 @@ class rigidbody_q:
     
     def check(self):
         if abs(np.linalg.norm(self.q)-1)>0.001:
-            print("Warning: norm of quaternions is %f. Normalizing. \n" % 
+            print("Warning: norm of quaternions is %f. \n" % 
                   (np.linalg.norm(self.q)) 
                  )
-            self.q = self.q /np.linalg.norm(self.q)
+            
             

@@ -39,7 +39,7 @@ from context import envir
 from context import ut
 from context import plot
 
-plus = False
+plus = True
 name = "Manual"
 
 class ReadKeys(DirectObject.DirectObject):
@@ -47,58 +47,72 @@ class ReadKeys(DirectObject.DirectObject):
     def __init__(self):
         
         self.accept("time-arrow_up", self.call_fw)
-        self.accept("time-arrow_right-repeat", self.call_fw)
+        self.accept("time-arrow_up-repeat", self.call_fw)
         
         self.accept("time-arrow_down", self.call_bw)
-        self.accept("time-arrow_left-repeat", self.call_bw)
+        self.accept("time-arrow_down-repeat", self.call_bw)
         
         self.accept("time-arrow_left", self.call_left)
-        self.accept("time-arrow_up-repeat", self.call_left)
+        self.accept("time-arrow_left-repeat", self.call_left)
         
         self.accept("time-arrow_right", self.call_right)
-        self.accept("time-arrow_down-repeat", self.call_right)
+        self.accept("time-arrow_right-repeat", self.call_right)
         
         self.accept("time-a", self.call_dz)
         self.accept("time-a-repeat", self.call_dz)
         
         self.accept("time-z", self.call_dz_neg)
         self.accept("time-z-repeat", self.call_dz_neg)
-    
+        
+        self.accept("time-j",self.call_yaw_cw)
+        self.accept("time-j-repeat",self.call_yaw_cw)
+        
+        self.accept("time-g",self.call_yaw_ccw)
+        self.accept("time-g-repeat",self.call_yaw_ccw)
+        
     def call_fw(self, when):
         global cmd 
         if plus is False:
-            cmd = cmd + np.array([ -10.0, -10, 10, 10 ])
+            cmd = cmd + np.array([ -5.0, -5, 5, 5 ])
         else:
             cmd = cmd + np.array([ -10.0, 0, +10, 0 ])
     
     def call_bw(self, when):
         global cmd 
         if plus is False:
-            cmd = cmd + np.array([ +10, +10, -10, -10.0 ])
+            cmd = cmd + np.array([ +5, +5, -5, -5.0 ])
         else:
             cmd = cmd + np.array([ +10, 0, -10, 0.0 ])
         
     def call_left(self, when):
         global cmd 
         if  plus is False:
-            cmd = cmd + np.array([ 10.0, -10, -10, +10 ])
+            cmd = cmd + np.array([ 5.0, -5, -5, +5 ])
         else:
             cmd = cmd + np.array([ 0, -10, 0, +10.0 ])
         
     def call_right(self, when):
         global cmd 
         if plus is False:
-            cmd = cmd + np.array([ -10.0, +10, +10, -10.0 ])	
+            cmd = cmd + np.array([ -5.0, +5, +5, -5.0 ])	
         else:
             cmd = cmd + np.array([ 0, +10.0, 0, -10.0 ])	
         
     def call_dz(self, when):
         global cmd 
-        cmd += np.array([ +10, +10, +10, +10 ])
+        cmd += np.array([ +5, +5, +5, +5 ])
         
     def call_dz_neg(self, when):
         global cmd 
-        cmd += np.array([ -10, -10, -10, -10 ])	
+        cmd += np.array([ -5, -5, -5, -5 ])	
+        
+    def call_yaw_cw(self, when):
+        global cmd
+        cmd += np.array([ +5, -5, +5, -5 ])	
+    
+    def call_yaw_ccw(self, when):
+        global cmd
+        cmd += np.array([ -5, +5, -5, +5 ])	
         
 class Panda3DApp(ShowBase):
  
@@ -106,7 +120,6 @@ class Panda3DApp(ShowBase):
         ShowBase.__init__(self)
 		
         # Load the environment model.
-        # self.scene = self.loader.loadModel("../res/BeachTerrain/BeachTerrain")
         self.scene = self.loader.loadModel("../models/environment") 
            
 	    # Reparent the model to render.
@@ -116,7 +129,7 @@ class Panda3DApp(ShowBase):
         self.scene.setScale(0.25, 0.25, 0.25)
         self.scene.setPos(-8, 42, 0)
 		
-        self.quadrotor = self.loader.loadModel("../res/CF21")
+        self.quadrotor = self.loader.loadModel("../quadsim/res/CF21")
         self.quadrotor.setScale(1, 1, 1)
         self.quadrotor.reparentTo(self.render)
         self.quadrotor.setPos(0,0,3)
@@ -190,14 +203,10 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
     # Calculate body-based forces and torques
     fb, taub = qftau.input2ftau(cmd,qrb.vb)
     
-    # Apply environment-based forces and torques 
-    fe = np.dot(qrb.rotmb2e, fb)
-    taue = np.dot(qrb.rotmb2e, taub)
+    fe_e, taue_e = envir.applyenv2ftaue(qrb)
     
-    fe, taue = envir.applyenv2ftaue(fe, taue, qrb.mass)
-    
-    fb = np.dot(np.transpose(qrb.rotmb2e), fe)
-    taub = np.dot(np.transpose(qrb.rotmb2e), taue)
+    fb = fb + np.transpose(qrb.rotmb2e)@fe_e
+    taub = taub + np.transpose(qrb.rotmb2e)@taue_e
     
     # Run the kinematic / time forward
     qrb.run_quadrotor(dt_sim, fb, taub)

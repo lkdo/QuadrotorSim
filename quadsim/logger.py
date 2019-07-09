@@ -46,6 +46,12 @@ class Logger:
         self.cmd_time = []
         self.cmd_rotors = []
         
+        self.ftau_time = []
+        self.ftau_fe = []
+        self.ftau_fb = []
+        self.ftau_taue = []
+        self.ftau_taub = []
+        
     # rigid body elements 
     ###################################################################
     
@@ -107,5 +113,40 @@ class Logger:
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 
                 fullline = c1+"  "+c2+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
+                f.write(fullline)
+                
+    # forces and torques 
+    ###################################################################
+
+    def log_ftau(self, t, fe, fb, taue, taub):
+        
+        self.ftau_time.append(t)
+        self.ftau_fe.append(fe)
+        self.ftau_fb.append(fb)
+        self.ftau_taue.append(taue)
+        self.ftau_taub.append(taub)
+             
+    def log2file_ftau(self):
+        
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+        fullname = location + "/" +  self.basename + "__ftau.txt"
+        with open(fullname,"w") as f:
+            f.write("time fe taue fb taub \n")
+            for i in range(len(self.ftau_time)):
+                c1 = np.array2string(self.ftau_time[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.ftau_fe[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c3 = np.array2string(self.ftau_taue[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c4 = np.array2string(self.ftau_fb[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c5 = np.array2string(self.ftau_taub[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
                 fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)

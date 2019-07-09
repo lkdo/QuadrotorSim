@@ -28,7 +28,7 @@ import numpy as np
 
 import cts 
 
-def applyenv2ftaue(fe, taue, mass):
+def applyenv2ftaue(rb):
     """ Applies enviornment forces and torques to the object 
     
     - applies gravity
@@ -40,6 +40,7 @@ def applyenv2ftaue(fe, taue, mass):
     """
     
     # Add gravity 
-    fe += np.array([0,0,-mass*cts.g_CONST])
+    fe_e = np.array([0.0,0.0,-rb.mass*cts.g_CONST])
+    taue_e = np.array([0.0,0.0,0.0])
     
-    return (fe, taue)
+    return fe_e, taue_e

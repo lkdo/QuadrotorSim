@@ -106,6 +106,7 @@ Finished recording lecture 05. Started working on slides for lecture 6, on the d
 ------------
 Working on slides lecture 6 dynamics. Tomorrow I go to Aalborg to return the computer. 
 
+
 06/07/2019
 -----------
 Funny day today. Worked on Lecture 7, and I have a transcript as well.
@@ -114,3 +115,14 @@ Next, I started to look back at the code. Added some features and corrected bugs
 07/07/2019
 -----------
 Worked more on the 3D model. Found out in Blender how to use textures at a basic level. Added some color textuure to the quadrotor to identify front and back. Corrected Lesson 3. Still have to do Lecture 5 and 6 corrections and record Lesson 7.
+
+08/07/2019
+-----------
+Today I worked a bit on code. I had a mistake for the vb equation, in the snese that I should work with ve to get position. 
+Aerodynamic forces though should use dpb/dt. That is why I guess it is used in the UAV book. 
+
+Tried to look a bit at th step responses.
+Rolling casuses mainly movement along the y axis, but there is also a component, smaller, along the x axis.
+This is beacause, as the plarform changes orientation, the local frame tau_x and tau_z ( I alwyas get a bit of yawing) in th earth frame, i get tau_y also. 
+Same for pitching.
+Now, I do not get symmetrical + and - drifts on the secondary axis, and it seems to be from the inertia product terms. 

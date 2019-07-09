@@ -47,28 +47,27 @@ def testcase_template_A():
    
         # Calculate body-based forces and torques
         fb, taub = qftau.input2ftau(cmd[idx,:],qrb.vb)
-        idx += 1 
+        
+        fe_e, taue_e = envir.applyenv2ftaue(qrb)
     
-        # Apply environment-based forces and torques 
-        fe = np.dot(qrb.rotmb2e, fb)
-        taue = np.dot(qrb.rotmb2e, taub)
-    
-        fe, taue = envir.applyenv2ftaue(fe, taue, qrb.mass)
-    
-        fb = np.dot(np.transpose(qrb.rotmb2e), fe)
-        taub = np.dot(np.transpose(qrb.rotmb2e), taue)
+        fb = fb + np.transpose(qrb.rotmb2e)@fe_e
+        taub =  taub + np.transpose(qrb.rotmb2e)@taue_e
     
         # Run the kinematic / time forward
         qrb.run_quadrotor(dt_sim, fb, taub)
-
+        idx += 1
+        
         # Logging frequency    
         if abs(t/dt_log - round(t/dt_log)) < 0.000001 :
             qrb.check()
             logger.log_rigidbody(t, qrb)
             logger.log_cmd(t, cmd[idx,:])
+            logger.log_ftau(t, np.transpose(qrb.rotmb2e)@fb, fb, 
+                                       np.transpose(qrb.rotmb2e)@taub, taub)
 
     logger.log2file_rigidbody()
     logger.log2file_cmd()
+    logger.log2file_ftau()
     
     plotter.plot_rigidbody(logger)
     plotter.plot_cmd(logger)
@@ -82,8 +81,8 @@ omegab = np.array([0,0,0])
 
 # Simulation parameters
 dt_sim = 0.001   # seconds
-T_sim = 10        # seconds
-dt_log = 1          # seconds
+T_sim = 30        # seconds
+dt_log = 0.1   # seconds
 
 # Test Case 
 #######################################################################
@@ -108,7 +107,6 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0010_roll_pos_plus" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
 cmd[index:,1] += 10
@@ -120,13 +118,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0011_roll_pos_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,1] += 10
-cmd[index:,2] += 10
-cmd[index:,3] -= 10
-cmd[index:,0] -= 10
+cmd[index:,1] += 5
+cmd[index:,2] += 5
+cmd[index:,3] -= 5
+cmd[index:,0] -= 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -134,7 +131,6 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0015_roll_neg_plus" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
 cmd[index:,1] -= 10
@@ -146,13 +142,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0016_roll_neg_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,1] -= 10
-cmd[index:,2] -= 10
-cmd[index:,3] += 10
-cmd[index:,0] += 10
+cmd[index:,1] -= 5
+cmd[index:,2] -= 5
+cmd[index:,3] += 5
+cmd[index:,0] += 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -160,7 +155,6 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0020_pitch_pos_plus" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
 cmd[index:,0] -= 10
@@ -172,13 +166,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0021_pitch_pos_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,2] += 10
-cmd[index:,3] += 10
-cmd[index:,0] -= 10
-cmd[index:,1] -= 10
+cmd[index:,2] += 5
+cmd[index:,3] += 5
+cmd[index:,0] -= 5
+cmd[index:,1] -= 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -186,7 +179,6 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0025_pitch_neg_plus" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
 cmd[index:,0] += 10
@@ -198,25 +190,26 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0026_pitch_neg_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,2] -= 10
-cmd[index:,3] -= 10
-cmd[index:,0] += 10
-cmd[index:,1] += 10
+cmd[index:,2] -= 5
+cmd[index:,3] -= 5
+cmd[index:,0] += 5
+cmd[index:,1] += 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
 
 # Test Case 
 #######################################################################
-name = "0030_yaw_pos_plus" 
-dt_log = 0.1
+name = "0030_yaw_pos_plus" # CCW 
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,0] += 10
-cmd[index:,2] += 10
+cmd[index:,1] += 5
+cmd[index:,3] += 5
+cmd[index:,0] -= 5
+cmd[index:,2] -= 5
+
 qftau = qftau_cf.QuadFTau_CF(0,True)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -224,11 +217,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0031_yaw_pos_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,0] += 10
-cmd[index:,2] += 10
+cmd[index:,1] += 5
+cmd[index:,3] += 5
+cmd[index:,0] -= 5
+cmd[index:,2] -= 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -236,11 +230,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0035_yaw_neg_plus" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,1] += 10
-cmd[index:,3] += 10
+cmd[index:,1] -= 5
+cmd[index:,3] -= 5
+cmd[index:,0] += 5
+cmd[index:,2] += 5
 qftau = qftau_cf.QuadFTau_CF(0,True)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()
@@ -248,11 +243,12 @@ testcase_template_A()
 # Test Case 
 #######################################################################
 name = "0036_yaw_neg_cross" 
-dt_log = 0.1
 cmd = 37278 * np.ones([round(T_sim/dt_sim)+10, 4])
 index = int((5)/dt_sim) 
-cmd[index:,1] += 10
-cmd[index:,3] += 10
+cmd[index:,1] -= 5
+cmd[index:,3] -= 5
+cmd[index:,0] += 5
+cmd[index:,2] += 5
 qftau = qftau_cf.QuadFTau_CF(0,False)
 qrb = rb.rigidbody_q(pos, q, ve, omegab, qftau.mass, qftau.I)
 testcase_template_A()

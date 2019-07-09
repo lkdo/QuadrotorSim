@@ -44,17 +44,19 @@ class QuadFTau_CF:
         """ std_ration should be in [0,1] """
         
         # if plus is false we have cross 
-        self.plus = plus 
+        self.plus = plus
         
         self.radius = 0.045 # from center of mass to rotor, meters 
         self.mass = 0.028 # kg
-        #self.Kaero = np.array([  [-10.2506, -0.3177, -0.4332],
-        #                         [-0.3177, -10.2506, -0.4332],
-        #                         [-7.7050, -7.7050, -7.5530] 
-        #                     ])*10**-7
-        self.Kaero = np.array([  [-9.1785, 0, 0],
-                                            [0, -9.1785, 0],
-                                            [0, 0, -10.311]  ])*10**-7
+        
+        self.Kaero = np.array([  [-10.2506, -0.3177, -0.4332],
+                                            [-0.3177, -10.2506, -0.4332],
+                                            [-7.7050, -7.7050, -7.5530] 
+                                        ])*10**-7
+        
+        #self.Kaero = np.array([  [-9.1785, 0, 0],
+        #                                    [0, -9.1785, 0],
+        #                                    [0, 0, -10.311]  ])*10**-7
 
         self.input2thrust_coeff = [+ 2.130295*10**-11, +1.032633*10**-6, 
                               + 5.484560*10**-4]
@@ -66,10 +68,10 @@ class QuadFTau_CF:
         if self.plus is False :
             # cross configuration 
             self.I = np.array([ [16.571710, -0.830806, -0.718277 ],
-                            [ -0.830806, 16.655602, -1.800197],
-                            [ -0.718277, -1.800197, 29.261652]])*10**-6 
+                          [ -0.830806, 16.655602, -1.800197],
+                          [ -0.718277, -1.800197, 29.261652]])*10**-6 
         else:
-            # plus configuration  ( Benoit Landry)
+            # plus configuration  (Benoit Landry MIT)
             self.I = np.array([ [2.3951, 0, 0 ],
                                         [ 0, 2.3951, 0],
                                         [ 0, 0, 3.23] ] )*10**-5 
@@ -114,6 +116,7 @@ class QuadFTau_CF:
         # print("cT={}, std={}  \n cQ={}, std={}".format (self.cT,self.cT_std, 
         #                                                                           self.cQ, self.cQ_std))
         
+        # Reaaaaaly different from Brnoit Landry MIT paper Kf and Km, by 3 orders of mag
         self.cT = 1.903*10**(-8)
         self.cQ = 1.246*10**(-10)
                   
@@ -131,7 +134,6 @@ class QuadFTau_CF:
     
     def input2omegar_i(self, cmd_i):    
         """ Input is 0-65535, rotor angular velocity is in rad/s """
-        
         if cmd_i <= 1000:
             return 0
         else:
@@ -170,7 +172,6 @@ class QuadFTau_CF:
                           self.input2omegar_i(cmd[2]), 
                           self.input2omegar_i(cmd[3]) ])
     
-                
     # "Main" function
     ###################################################
         
@@ -197,7 +198,6 @@ class QuadFTau_CF:
                    /  \
 		          *    *
 		   CCW  (3)    (4) CW
-		
 		"""
             
         # thrust on each rotor
@@ -214,9 +214,10 @@ class QuadFTau_CF:
          
         # total force
         fb = ( np.array([0,0,ft1+ft2+ft3+ft4]) # thrust  
-               + fba # aerodynamic forces s
+              + fba # aerodynamic forces s
               ) 
-            
+        
+        
         taur1 = self.thrust2torque_i(ft1)
         taur2 = self.thrust2torque_i(ft2)
         taur3 = self.thrust2torque_i(ft3)
@@ -282,7 +283,7 @@ class QuadFTau_CF_b:
                                    [-radius*math.sqrt(2)/2*cT, -radius*math.sqrt(2)/2*cT, 
                                            radius*math.sqrt(2)/2*cT, radius*math.sqrt(2)/2*cT],
                                    [-cQ, cQ, -cQ, cQ]])
-		
+    	
         self.invGamma = np.linalg.inv(self.Gamma)
        
         self.input2omegar_coeff = input2omegar_coeff  
@@ -343,3 +344,11 @@ class QuadFTau_CF_b:
         fb, taub = self.omegar2ftau(omegar)
         
         return fb, taub
+    
+    def fztau2cmd(self,fztau):
+        
+        omegar = np.sqrt(self.invGamma@fztau)
+        cmd = self.omegar2input(omegar)
+        
+        return cmd 
+    
