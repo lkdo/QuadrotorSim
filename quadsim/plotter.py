@@ -55,7 +55,7 @@ class Plotter:
             os.makedirs(location)
         
         # Position plot
-        ###############################################################
+        ################################################
         fig, ax_lst = plt.subplots(3, 1)
         fig.suptitle('Rigid Body Position', fontsize = self.big_font_size)
         time = np.asarray(log.rb_time)
@@ -75,7 +75,7 @@ class Plotter:
         plt.close(fig)
         
         # Euler Angles plot 
-        ###############################################################
+        ################################################
         fig, ax_lst = plt.subplots(3, 1)
         fig.suptitle('Rigid Body Euler-XYZ', fontsize = self.big_font_size)
         time = np.asarray(log.rb_time)
@@ -101,7 +101,7 @@ class Plotter:
         if not os.path.exists(location):
             os.makedirs(location)
 
-        # Position plot
+        # Rotor command plot
         fig, ax_lst = plt.subplots(4, 1)
         fig.suptitle('Raw Rotor Command', fontsize = self.big_font_size)
         time = np.asarray(log.cmd_time)
@@ -122,3 +122,94 @@ class Plotter:
         fig.savefig(fullname)
         plt.close(fig)
         
+    def plot_attstab(self, log):        
+        
+        # saving location 
+        location = log.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+
+       # Angle ref 
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Angle Ref vs Angle ', fontsize = self.big_font_size)
+        time = np.asarray(log.attstab_time)
+        angle_ref = np.asarray(log.attstab_angle_ref)
+        angle = np.asarray(log.rb_euler)
+        
+        ax_lst[0].plot( time, angle_ref[:,0])
+        ax_lst[0].plot( time, angle[:,0] )
+        ax_lst[0].set_title("Roll")
+        ax_lst[0].legend(("Roll Ref","Roll"))
+        
+        ax_lst[1].plot( time, angle_ref[:,1] )
+        ax_lst[1].plot( time, angle[:,1])
+        ax_lst[1].set_title("Pitch")
+        ax_lst[1].legend(("Pitch Ref","Pitch"))
+        
+        ax_lst[2].plot( time, angle_ref[:,2])
+        ax_lst[2].plot( time, angle[:,2])
+        ax_lst[2].set_title("Yaw")
+        ax_lst[2].legend(("Yaw Ref","Yaw"))
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__angle_ref.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+        
+        # omega ref 
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Omega Ref vs Omega', fontsize = self.big_font_size)
+        time = np.asarray(log.attstab_time)
+        omega_ref = np.asarray(log.attstab_omega_ref)
+        omega = np.asarray(log.rb_omegab)
+        
+        ax_lst[0].plot( time, omega_ref[:,0])
+        ax_lst[0].plot( time, omega[:,0])
+        ax_lst[0].set_title("Omega X")
+        ax_lst[0].legend(("Omega X Ref","Omega X"))
+        
+        ax_lst[1].plot( time, omega_ref[:,1] )
+        ax_lst[1].plot( time, omega[:,1] )
+        ax_lst[1].set_title("Omega Y")
+        ax_lst[1].legend(("Omega Y Ref","Omega Y"))
+        
+        ax_lst[2].plot( time, omega_ref[:,2])
+        ax_lst[2].plot( time, omega[:,2] )
+        ax_lst[2].set_title("Omega Z Rate")
+        ax_lst[2].legend(("Omega Z Ref","Omega Z"))
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__omega_ref.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+        
+        # alpha ref 
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Alpha Ref vs Alpha ', fontsize = self.big_font_size)
+        time = np.asarray(log.attstab_time)
+        alpha_ref = np.asarray(log.attstab_alpha_ref)
+        alpha = np.asarray(log.rb_alphab)
+        
+        ax_lst[0].plot( time, alpha_ref[:,0])
+        ax_lst[0].plot( time, alpha[:,0])
+        ax_lst[0].set_title("Alpha X")
+        ax_lst[0].legend(("Alpha X Ref","Alpha X"))
+        
+        ax_lst[1].plot( time, alpha_ref[:,1])
+        ax_lst[1].plot( time, alpha[:,1])
+        ax_lst[1].set_title("Alpha Y")
+        ax_lst[1].legend(("Alpha Y Ref","Alpha Y"))
+        
+        ax_lst[2].plot( time, alpha_ref[:,2])
+        ax_lst[2].plot( time, alpha[:,2])
+        ax_lst[2].set_title("Alpha Z")
+        ax_lst[2].legend(("Alpha Z Ref","Alpha Z"))
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__alpha_ref.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+                

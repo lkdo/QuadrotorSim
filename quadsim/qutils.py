@@ -32,7 +32,7 @@ def skew(X):
         
     return np.array([[0,-X[3-1],X[2-1]],[X[3-1],0,-X[1-1]],[-X[2-1],X[1-1],0]])
 
-def rotm2exyz(R):
+def rotm2exyz(R, sol=1):
     """ Transforms a rotation matrix to Euler X-Y-Z (1-2-3) angles
     
     That is input matrix R = Rz(phi)*Ry(theta)*Rx(psi), 
@@ -55,8 +55,11 @@ def rotm2exyz(R):
                           R[1-1,1-1]/math.cos(theta2))
        
         # Choose one set of rotations
-        return np.array([psi1,theta1,phi1])
-        #return np.array([psi2,theta2,phi2])        
+        if sol == 1:
+            return np.array([psi1,theta1,phi1])
+        else:
+            return np.array([psi2,theta2,phi2])
+        
     else:
         phi = 0 # can be anything 
         if R[3-1,1-1] == -1:

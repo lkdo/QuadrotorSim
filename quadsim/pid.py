@@ -67,9 +67,8 @@ class PID:
         self.differentiator = 0
         self.error_d1 = 0
        
-    def run(self,  ref, measured, Ts):
+    def run(self,  error, Ts):
     
-        error = ref - measured
         self.integrator = self.integrator + Ts/2*(error + self.error_d1)
         self.differentiator =(  (2*self.tau - Ts)/(2*self.tau + Ts)*self.differentiator  
                                           + 2/(2*self.tau +Ts)*(error - self.error_d1)  )
