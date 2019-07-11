@@ -76,6 +76,8 @@ class ReadKeys(DirectObject.DirectObject):
         self.accept("time-g",self.call_yaw_ccw)
         self.accept("time-g-repeat",self.call_yaw_ccw)
         
+        self.accept("time-y",self.call_camera_yaw)
+        
     def call_fw(self, when):
         global thrust_ref, roll_ref, pitch_ref, yaw_ref 
         global panda3D_app
@@ -137,10 +139,14 @@ class ReadKeys(DirectObject.DirectObject):
         global qrb
         thrust_ref = thrust_ref - 1/400*qrb.mass*cts.g_CONST
         panda3D_app.screenText_TRPY(thrust_ref,roll_ref, pitch_ref, yaw_ref)
+    
+    def call_camera_yaw(self,when):
+        global panda3D_app
+        panda3D_app.camera_yaw = not panda3D_app.camera_yaw
         
 class Panda3DApp(ShowBase):
  
-    def __init__(self):
+    def __init__(self, camera_yaw):
         ShowBase.__init__(self)
 		
         # Load the environment model.
@@ -178,10 +184,17 @@ class Panda3DApp(ShowBase):
         self.textObject_pos = OnscreenText(" Hello ", pos = (0, +0.8), scale = 0.07,
                                                  fg=(255,255,255,1), bg=(0,0,0,1), mayChange=True,
                                                  font = monospaced_font)
-
+        self.camera_yaw = camera_yaw
+        
     # Define a procedure to move the camera.
     def followQuadCameraTask(self, task):
-        self.camera.setPos(self.quadrotor.getX()-20, self.quadrotor.getY(), self.quadrotor.getZ()+3)
+        h=self.quadrotor.getH()*math.pi/180.0
+        if self.camera_yaw is False :
+            self.camera.setPos(self.quadrotor.getX()-20, self.quadrotor.getY(), self.quadrotor.getZ()+3)
+        else:
+            self.camera.setPos(self.quadrotor.getX()-20*math.cos(h), 
+                                     self.quadrotor.getY()-20*math.sin(h), 
+                                     self.quadrotor.getZ()+3)
         self.camera.lookAt(self.quadrotor)
         return Task.cont
 
@@ -259,7 +272,6 @@ pid_yaw = pid.PID(3, 0.5, 0, 2*360*math.pi/180, -2*360**math.pi/180, tau)
          
 # Quadrotor Initialization
 ############################################
-
 qftau = qftau_cf.QuadFTau_CF(0,plus)
 qftau_s = qftau_cf.QuadFTau_CF_b(qftau.cT, qftau.cQ, qftau.radius, 
                                                                    qftau.input2omegar_coeff, plus)
@@ -273,11 +285,12 @@ logger = log.Logger(fullname, name)
 plotter = plot.Plotter()
 
 # Initialize the visualization
-panda3D_app = Panda3DApp()
+panda3D_app = Panda3DApp(False)
 panda3D_app.screenText_TRPY(thrust_ref,roll_ref, pitch_ref, yaw_ref)
 readkeys = ReadKeys()
 
-# The main simulation loop     
+# The main simulation loop    
+############################################## 
 for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
    
     # Ctrl angle frequency    
@@ -338,9 +351,10 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
                                       np.array([alpha_ref[0],alpha_ref[1],alpha_ref[2]]))
         
 # End of program 
-#logger.log2file_rigidbody()
-#logger.log2file_cmd()
-#logger.log2file_attstab()
+#################################################
+logger.log2file_rigidbody()
+logger.log2file_cmd()
+logger.log2file_attstab()
 plotter.plot_rigidbody(logger)
 plotter.plot_cmd(logger)
 plotter.plot_attstab(logger)
