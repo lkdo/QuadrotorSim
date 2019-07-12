@@ -26,7 +26,6 @@ __license__ = "GNU GPLv3"
 
 # Import general libraries
 import numpy as np
-import math
 import time
 import datetime
 

@@ -19,7 +19,6 @@
 
 """ Module implements the rigid body kinematic via the RigidBody classes
 
-To add more text  
 """
 
 __version__ = "0.1"

@@ -120,6 +120,8 @@ class ReadKeys(DirectObject.DirectObject):
         self.exitpressed = True
         
 ########################################################        
+
+
 class Panda3DApp(ShowBase):
     """ Main class of the game engine Panda3D """
    
@@ -164,25 +166,32 @@ class Panda3DApp(ShowBase):
                                                  fg=(255,255,255,1), bg=(0,0,0,1), mayChange=True,
                                                  font = monospaced_font)
 
+
     # Define a procedure to move the camera.
+    
     def followQuadCameraTask(self, task):
         self.camera.setPos(self.quadrotor.getX()-20, self.quadrotor.getY(), self.quadrotor.getZ()+3)
         self.camera.lookAt(self.quadrotor)
         return Task.cont
 
+
     # Define a procedure to move the panda actor 
+    
     def moveActorTask(self, task):
         pos = self.qrb.pos
         q = LQuaternionf(self.qrb.q[0],self.qrb.q[1],self.qrb.q[2],self.qrb.q[3])
         self.quadrotor.setQuat(q)
         self.quadrotor.setPos(pos[0],pos[1],pos[2])
         return Task.cont
+
     
     # function to write on screen 
+    
     def screenText_cmd(self,cmd):
         text = "R1={0:5.0f},R2={1:5.0f},R3={2:5.0f},R4={3:5.0f}".format(cmd[0],cmd[1],cmd[2],cmd[3])
         self.textObject_cmd.text = text
-        
+
+
     def screenText_pos(self,pos,RPY):
         text = "X={0: 8.2f},Y={1: 8.2f},Z={2: 8.2f},R={3: 8.2f},P={4: 8.2f},Y={5: 8.2f}".format(
                         pos[0],pos[1],pos[2],
