@@ -199,6 +199,13 @@ class QuadFTau_CF:
 		          *    *
 		   CCW  (3)    (4) CW
 		"""
+        # basic check 
+        for i in range(4):
+            if cmd[i]<0:
+                cmd[i]=0
+            elif cmd[i]>2**16-1:
+                cmd[i]=2**16-1
+            cmd[i]=int(cmd[i])
             
         # thrust on each rotor
         ft1 = self.input2thrust_i(cmd[0])
@@ -339,6 +346,14 @@ class QuadFTau_CF_b:
     
     def input2ftau(self,cmd):
         """ cmd is a 4 vector, each with values from 0 to 65535  """
+        
+        # basic check 
+        for i in range(4):
+            if cmd[i]<0:
+                cmd[i]=0
+            elif cmd[i]>2**16-1:
+                cmd[i]=2**16-1
+            cmd[i]=int(cmd[i])
             
         omegar = self.input2omegar(cmd)
         fb, taub = self.omegar2ftau(omegar)
