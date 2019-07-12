@@ -161,7 +161,7 @@ class Panda3DApp(ShowBase):
         self.textObject_pos = OnscreenText("Position and Attitude", pos = (0, +0.8), scale = 0.07,
                                                  fg=(255,255,255,1), bg=(0,0,0,1), mayChange=True,
                                                  font = monospaced_font)
-        text = "R1={0: .0f},R2={1: .0f},R3={2: .0f},R={3: .0f}".format(cmd[0],cmd[1],cmd[2],cmd[3])        
+        text = "R1={0: .0f},R2={1: .0f},R3={2: .0f},R4={3: .0f}".format(cmd[0],cmd[1],cmd[2],cmd[3])        
         self.textObject_cmd = OnscreenText(text, pos = (0, -0.8), scale = 0.07,
                                                  fg=(255,255,255,1), bg=(0,0,0,1), mayChange=True,
                                                  font = monospaced_font)
