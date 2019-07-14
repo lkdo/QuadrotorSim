@@ -53,11 +53,6 @@ class Logger:
         self.ftau_taue = []
         self.ftau_taub = []
         
-        self.attstab_time = []
-        self.attstab_angle_ref = []
-        self.attstab_omega_ref = []
-        self.attstab_alpha_ref = []
-        
     # rigid body elements 
     ###################################################
     
