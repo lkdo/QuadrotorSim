@@ -131,12 +131,11 @@ while readkeys.exitpressed is False :
                               [math.cos(meas_yaw), math.sin(meas_yaw)]])
         angle_ref[0:2] = 1/envir.g *R@( K1@meas_ve[0:2] + K2@(meas_pos[0:2]-ref[0:2]) )
         
-        # and  staurate them 
-        for i in range(2):
-            if angle_ref[i] > 40 * math.pi /180:
-                angle_ref[i] = 40 * math.pi /180
-            elif  angle_ref[i] < -40 * math.pi/180:
-                angle_ref[i] = -40 * math.pi/180
+        # and  saturate them 
+        V = 40 * math.pi /180 
+        v_max = np.max(abs(angle_ref[0:2]))
+        if (v_max > V):
+            angle_ref[0:2] = (V/v_max)*angle_ref[0:2]
         
         thrust_ref = qrb.mass*envir.g + qrb.mass*(K3*meas_ve[2]+K4*(meas_pos[2]-ref[2])) 
         

@@ -96,7 +96,7 @@ dt_log = 0.1
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-T_sim = 70
+T_sim = 80
 """ Total time of the simulation """
 
 # Predefined omega-reference to step 
@@ -104,16 +104,18 @@ T_sim = 70
 pos_ref_step = np.zeros([int(T_sim/dt_ctrl_pos)+1,4])
 pos_ref_step[:,2] = 3.0
 
-pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),0] = 10.0
+pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),0] = 20.0
 pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),3] = 120*math.pi/180
 
-pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),1] = 10.0
+pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),1] = 20.0
 pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),3] = 120*math.pi/180
 
-pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),2] = 13.0
+pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),2] = 20.0
 pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),3] = 120*math.pi/180
 
-
+pos_ref_step[int(63/dt_ctrl_pos)+1:int(73/dt_ctrl_pos),0] = -20.0
+pos_ref_step[int(63/dt_ctrl_pos)+1:int(73/dt_ctrl_pos),1] = -20.0
+pos_ref_step[int(63/dt_ctrl_pos)+1:int(73/dt_ctrl_pos),3] = 120*math.pi/180
 
 k = 0
 
@@ -149,12 +151,11 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
                               [math.cos(meas_yaw), math.sin(meas_yaw)]])
         angle_ref[0:2] = 1/envir.g *R@( K1@meas_ve[0:2] + K2@(meas_pos[0:2]-ref[0:2]) )
         
-        # and  staurate them 
-        for i in range(2):
-            if angle_ref[i] > 40 * math.pi /180:
-                angle_ref[i] = 40 * math.pi /180
-            elif  angle_ref[i] < -40 * math.pi/180:
-                angle_ref[i] = -40 * math.pi/180
+        # and  saturate them 
+        V = 40 * math.pi /180 
+        v_max = np.max(abs(angle_ref[0:2]))
+        if (v_max > V):
+            angle_ref[0:2] = (V/v_max)*angle_ref[0:2]
         
         thrust_ref = qrb.mass*envir.g + qrb.mass*(K3*meas_ve[2]+K4*(meas_pos[2]-ref[2])) 
         
