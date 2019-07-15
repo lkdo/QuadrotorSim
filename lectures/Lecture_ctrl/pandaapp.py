@@ -74,6 +74,8 @@ class ReadKeys(DirectObject.DirectObject):
         self.accept("time-g",self.call_yaw_ccw)
         self.accept("time-g-repeat",self.call_yaw_ccw)
         
+        self.accept("time-y",self.call_camera_yaw)
+        
         self.accept ("time-escape",self.call_exitpressed)
         
     def call_fw(self, when):
@@ -166,13 +168,16 @@ class ReadKeys(DirectObject.DirectObject):
     def call_exitpressed(self,when):
         self.exitpressed = True
         
+    def call_camera_yaw(self,when):
+        self.panda3D_app.camera_yaw = not self.panda3D_app.camera_yaw
+        
 ########################################################        
 
 
 class Panda3DApp(ShowBase):
     """ Main class of the game engine Panda3D """
    
-    def __init__(self, plus, qrb, ref, ctrl_mode = 1):
+    def __init__(self, plus, qrb, ref, ctrl_mode = 1, camera_yaw = False ):
         
         self.qrb = qrb 
         """ The rigid Body object """
@@ -221,14 +226,20 @@ class Panda3DApp(ShowBase):
                                                  fg=(255,255,255,1), bg=(0,0,0,1), mayChange=True,
                                                  font = monospaced_font)
 
-
+        self.camera_yaw = camera_yaw
+        
     # Define a procedure to move the camera.
     
     def followQuadCameraTask(self, task):
-        self.camera.setPos(self.quadrotor.getX()-20, self.quadrotor.getY(), self.quadrotor.getZ()+3)
+        h=self.qrb.rpy[2]
+        if self.camera_yaw is False :
+            self.camera.setPos(self.quadrotor.getX()-20, self.quadrotor.getY(), self.quadrotor.getZ()+3)
+        else:
+            self.camera.setPos(self.quadrotor.getX()-20*math.cos(h), 
+                                     self.quadrotor.getY()-20*math.sin(h), 
+                                     self.quadrotor.getZ()+3)
         self.camera.lookAt(self.quadrotor)
         return Task.cont
-
 
     # Define a procedure to move the panda actor 
     

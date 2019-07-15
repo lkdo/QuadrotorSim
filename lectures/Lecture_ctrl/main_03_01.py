@@ -82,12 +82,7 @@ pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
 pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
-#dt_ctrl_pos = 0.2  # 5 Hz
-#pid_x = pid.PID(0.01, 0.000, 0.0, 15*math.pi/180, -15*math.pi/180, 0.01)
-#pid_y = pid.PID(0.01, 0.0, 0.0, 15*math.pi/180, -15*math.pi/180, 0.01)
-#pid_z = pid.PID(0.01, 0.001, 0.02, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
-
-dt_ctrl_pos = 0.02  # 50 Hz
+dt_ctrl_pos = 0.2  # 5 Hz
 pid_x = pid.PID(0.01, 0.000, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_y = pid.PID(0.01, 0.0, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_z = pid.PID(0.1, 0.01, 0.1, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
@@ -194,7 +189,7 @@ while readkeys.exitpressed is False :
                                       np.array([tau_ref[0],tau_ref[1],tau_ref[2]]) )
         logger.log_posctrl(t,np.array([ ref[0], ref[1], ref[2] ]))
         logger.log_rigidbody(t, qrb)
-        fe = qrb.rotmb2e@fb + qrb.mass*np.array([0,0,-9.80665])
+        fe = qrb.rotmb2e@fb + qrb.mass*np.array([0,0,-envir.g])
         taue = qrb.rotmb2e@taub
         logger.log_ftau(t,fe,taue,fb,taub)
         logger.log_cmd(t, cmd)
