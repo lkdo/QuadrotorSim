@@ -73,9 +73,9 @@ thrust_ref = qrb.mass*envir.g
 ref = np.array([0.0,0.0,3.0,0.0]) #  x,y,z,yaw
 
 dt_ctrl_rate = 0.002 # 500 Hz
-pid_rollrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
+pid_rollrate = pid.PID(100, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
+pid_pitchrate = pid.PID(100,0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
+pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
 pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
@@ -122,13 +122,13 @@ while readkeys.exitpressed is False :
         
         # perfect measurement 
         meas_pos = qrb.pos
-        yaw = qrb.rpy[2]
+        meas_yaw = qrb.rpy[2]
         
         ref = readkeys.ref
         
         # Rotate into the yaw_frame x and y 
-        err_x = math.cos(qrb.rpy[2])*(ref[0] - meas_pos[0] )+math.sin(qrb.rpy[2])*(ref[1] - meas_pos[1])
-        err_y = -math.sin(qrb.rpy[2])*(ref[0] - meas_pos[0] )+ math.cos(qrb.rpy[2])*(ref[1] - meas_pos[1])
+        err_x = math.cos(meas_yaw)*(ref[0] - meas_pos[0] )+math.sin(meas_yaw)*(ref[1] - meas_pos[1])
+        err_y = -math.sin(meas_yaw)*(ref[0] - meas_pos[0] )+ math.cos(meas_yaw)*(ref[1] - meas_pos[1])
       
         angle_ref[0] = pid_y.run(-err_y, dt_ctrl_pos)
         angle_ref[1] = pid_x.run(err_x, dt_ctrl_pos)

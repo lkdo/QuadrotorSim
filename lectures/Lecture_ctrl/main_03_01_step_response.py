@@ -74,7 +74,7 @@ ref = np.array([0.0,0.0,3.0,0.0]) #  x,y,z,yaw
 
 dt_ctrl_rate = 0.002 # 500 Hz
 pid_rollrate = pid.PID(100, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-pid_pitchrate = pid.PID(100, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
+pid_pitchrate = pid.PID(100,0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
@@ -83,10 +83,10 @@ pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
 dt_ctrl_pos = 0.2  # 5 Hz
-K1 = np.array([[-2.5,0],[0,-0.2]])
-K2 = np.array([[-2.5,0],[0,-0.2]])
-K3 = -5
-K4 = -5
+pid_x = pid.PID(0.01, 0.000, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
+pid_y = pid.PID(0.01, 0.0, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
+pid_z = pid.PID(0.1, 0.01, 0.1, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
+
 
 # Simulation parameters
 ##########################################################
@@ -96,13 +96,23 @@ dt_log = 0.1
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-t = 0
-""" time variable """
+T_sim = 30
+""" Total time of the simulation """
+
+# Predefined omega-reference to step 
+##########################################################
+pos_ref_step = np.zeros([int(T_sim/dt_ctrl_pos)+1,4])
+pos_ref_step[:,2] = 3.0
+
+pos_ref_step[int(3/dt_ctrl_pos)+1:int(23/dt_ctrl_pos),0] = 10.0
+
+
+k = 0
 
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "Manual_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = "StepResponse_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
@@ -115,39 +125,35 @@ readkeys = pandaapp.ReadKeys(ref, 3, panda3D_app)
 
 # The main simulation loop     
 #########################################################
-while readkeys.exitpressed is False :
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
 
     #------------------------------------begin controller --------------------------------------------
     if abs(t/dt_ctrl_pos - round(t/dt_ctrl_pos)) < 0.000001 :
         
         # perfect measurement 
         meas_pos = qrb.pos
-        meas_ve = qrb.ve
         meas_yaw = qrb.rpy[2]
         
-        ref = readkeys.ref
+        ref = pos_ref_step[k,:]; k +=  1
         
-        R = np.array([[math.sin(meas_yaw), -math.cos(meas_yaw)],
-                              [math.cos(meas_yaw), math.sin(meas_yaw)]])
-        angle_ref[0:2] = 1/envir.g *R@( K1@meas_ve[0:2] + K2@(meas_pos[0:2]-ref[0:2]) )
+        # Rotate into the yaw_frame x and y 
+        err_x = math.cos(meas_yaw)*(ref[0] - meas_pos[0] )+math.sin(meas_yaw)*(ref[1] - meas_pos[1])
+        err_y = -math.sin(meas_yaw)*(ref[0] - meas_pos[0] )+ math.cos(meas_yaw)*(ref[1] - meas_pos[1])
+      
+        angle_ref[0] = pid_y.run(-err_y, dt_ctrl_pos)
+        angle_ref[1] = pid_x.run(err_x, dt_ctrl_pos)
         
-        # and  staurate them 
-        for i in range(2):
-            if angle_ref[i] > 40 * math.pi /180:
-                angle_ref[i] = 40 * math.pi /180
-            elif  angle_ref[i] < -40 * math.pi/180:
-                angle_ref[i] = -40 * math.pi/180
-        
-        thrust_ref = qrb.mass*envir.g + qrb.mass*(K3*meas_ve[2]+K4*(meas_pos[2]-ref[2])) 
+        thrust_ref = qrb.mass*envir.g + pid_z.run(ref[2] - meas_pos[2], dt_ctrl_pos)
         
     if abs(t/dt_ctrl_angle - round(t/dt_ctrl_angle)) < 0.000001 :
          
         meas_rpy = qrb.rpy
                
         omega_ref[0] = pid_roll.run(angle_ref[0]-meas_rpy[0],dt_ctrl_angle)
+       
         omega_ref[1] = pid_pitch.run(angle_ref[1]-meas_rpy[1],dt_ctrl_angle)
-        angle_ref[2] = readkeys.ref[3]
         
+        angle_ref[2] = pos_ref_step[k,3]
         err_yaw = angle_ref[2]-meas_rpy[2]
         if (err_yaw > math.pi):
             err_yaw = 2*math.pi - err_yaw
@@ -177,9 +183,6 @@ while readkeys.exitpressed is False :
     # Run the kinematic / time forward
     qrb.run_quadrotor(dt_sim, fb, taub)
 
-    # Time has increased now
-    t = t + dt_sim
-     
     # Visualization frequency    
     if abs(t/dt_vis - round(t/dt_vis)) < 0.000001 :
         panda3D_app.taskMgr.step()

@@ -96,13 +96,23 @@ dt_log = 0.1
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-t = 0
-""" time variable """
+T_sim = 30
+""" Total time of the simulation """
+
+# Predefined omega-reference to step 
+##########################################################
+pos_ref_step = np.zeros([int(T_sim/dt_ctrl_pos)+1,4])
+pos_ref_step[:,2] = 3.0
+
+pos_ref_step[int(3/dt_ctrl_pos)+1:int(23/dt_ctrl_pos),0] = 10.0
+
+
+k = 0
 
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "Manual_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = "StepResponse_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
@@ -115,7 +125,7 @@ readkeys = pandaapp.ReadKeys(ref, 3, panda3D_app)
 
 # The main simulation loop     
 #########################################################
-while readkeys.exitpressed is False :
+for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
 
     #------------------------------------begin controller --------------------------------------------
     if abs(t/dt_ctrl_pos - round(t/dt_ctrl_pos)) < 0.000001 :
@@ -125,7 +135,7 @@ while readkeys.exitpressed is False :
         meas_ve = qrb.ve
         meas_yaw = qrb.rpy[2]
         
-        ref = readkeys.ref
+        ref = pos_ref_step[k,:]; k +=  1
         
         R = np.array([[math.sin(meas_yaw), -math.cos(meas_yaw)],
                               [math.cos(meas_yaw), math.sin(meas_yaw)]])
@@ -146,7 +156,7 @@ while readkeys.exitpressed is False :
                
         omega_ref[0] = pid_roll.run(angle_ref[0]-meas_rpy[0],dt_ctrl_angle)
         omega_ref[1] = pid_pitch.run(angle_ref[1]-meas_rpy[1],dt_ctrl_angle)
-        angle_ref[2] = readkeys.ref[3]
+        angle_ref[2] = pos_ref_step[k,3]
         
         err_yaw = angle_ref[2]-meas_rpy[2]
         if (err_yaw > math.pi):
@@ -177,9 +187,6 @@ while readkeys.exitpressed is False :
     # Run the kinematic / time forward
     qrb.run_quadrotor(dt_sim, fb, taub)
 
-    # Time has increased now
-    t = t + dt_sim
-     
     # Visualization frequency    
     if abs(t/dt_vis - round(t/dt_vis)) < 0.000001 :
         panda3D_app.taskMgr.step()
