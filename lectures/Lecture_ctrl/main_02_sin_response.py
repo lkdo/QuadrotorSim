@@ -78,9 +78,9 @@ pid_pitchrate = pid.PID(100,0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
-pid_pitch = pid.PID(10, 0, 0, 1*360*math.pi/180, -1*360*math.pi/180, 0.01)
-pid_roll = pid.PID(10, 0, 0, 1*360*math.pi/180, -1*360**math.pi/180, 0.01)
-pid_yaw = pid.PID(5, 0, 0, 1*360*math.pi/180, -1*360**math.pi/180, 0.01)
+pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
+pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
 # Simulation parameters
 ##########################################################
@@ -97,11 +97,11 @@ T_sim = 55
 ##########################################################
 angle_ref_sin= np.zeros([int(T_sim/dt_ctrl_angle)+1,3])
 N = angle_ref_sin[int(3/dt_ctrl_angle)+1:int(13/dt_ctrl_angle),0].size
-l = 5 # how many full  2*PI in the 10 seconds 
+l = 4 # how many full  2*PI in the 10 seconds 
 freq = l/10 
-R = 80
-P = 80
-Y = 179
+R = 40
+P = 40
+Y = 40
 angle_ref_sin[int(3/dt_ctrl_angle)+1:int(13/dt_ctrl_angle),0] = R*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )
 angle_ref_sin[int(16/dt_ctrl_angle)+1:int(26/dt_ctrl_angle),1] = P*math.pi/180*np.sin(
@@ -109,9 +109,9 @@ angle_ref_sin[int(16/dt_ctrl_angle)+1:int(26/dt_ctrl_angle),1] = P*math.pi/180*n
 angle_ref_sin[int(29/dt_ctrl_angle)+1:int(39/dt_ctrl_angle),2] = Y*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )
 
-angle_ref_sin[int(42/dt_ctrl_angle)+1:int(52/dt_ctrl_angle),0] = R/4*math.pi/180*np.sin(
+angle_ref_sin[int(42/dt_ctrl_angle)+1:int(52/dt_ctrl_angle),0] = R*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )
-angle_ref_sin[int(42/dt_ctrl_angle)+1:int(52/dt_ctrl_angle),1] = P/4*math.pi/180*np.sin(
+angle_ref_sin[int(42/dt_ctrl_angle)+1:int(52/dt_ctrl_angle),1] = P*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )
 angle_ref_sin[int(42/dt_ctrl_angle)+1:int(52/dt_ctrl_angle),2] = Y*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )

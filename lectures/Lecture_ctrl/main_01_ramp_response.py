@@ -91,18 +91,18 @@ T_sim = 20
 # Predefined omega-reference to step 
 ##########################################################
 omega_ref_ramp = np.zeros([int(T_sim/dt_ctrl_rate)+1,3])
-omega_ref_ramp[int(3/dt_ctrl_rate)+1:int(6/dt_ctrl_rate),0] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(3/dt_ctrl_rate)+1:int(6/dt_ctrl_rate),0] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(3/dt_ctrl_rate)+1:int(6/dt_ctrl_rate),0].size, endpoint=True)
-omega_ref_ramp[int(7/dt_ctrl_rate)+1:int(10/dt_ctrl_rate),1] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(7/dt_ctrl_rate)+1:int(10/dt_ctrl_rate),1] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(7/dt_ctrl_rate)+1:int(10/dt_ctrl_rate),1].size, endpoint=True)
-omega_ref_ramp[int(11/dt_ctrl_rate)+1:int(14/dt_ctrl_rate),2] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(11/dt_ctrl_rate)+1:int(14/dt_ctrl_rate),2] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(11/dt_ctrl_rate)+1:int(14/dt_ctrl_rate),2].size, endpoint=True)
 
-omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),0] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),0] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),0].size, endpoint=True)
-omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),1] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),1] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),1].size, endpoint=True)
-omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),2] = np.linspace(0,360*math.pi/180,
+omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),2] = np.linspace(0,2.5*360*math.pi/180,
    omega_ref_ramp[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),2].size, endpoint=True)
 
 k = 0

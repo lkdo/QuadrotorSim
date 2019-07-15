@@ -78,9 +78,9 @@ pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
-pid_pitch = pid.PID(2, 0, 0, 2*360*math.pi/180, -2*360*math.pi/180, 0.01)
-pid_roll = pid.PID(2, 0, 0, 2*360*math.pi/180, -2*360**math.pi/180, 0.01)
-pid_yaw = pid.PID(3, 0, 0, 2*360*math.pi/180, -2*360**math.pi/180, 0.01)
+pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
+pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
 #dt_ctrl_pos = 0.2  # 5 Hz
 #pid_x = pid.PID(0.01, 0.000, 0.0, 15*math.pi/180, -15*math.pi/180, 0.01)
@@ -88,8 +88,8 @@ pid_yaw = pid.PID(3, 0, 0, 2*360*math.pi/180, -2*360**math.pi/180, 0.01)
 #pid_z = pid.PID(0.01, 0.001, 0.02, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
 
 dt_ctrl_pos = 0.02  # 50 Hz
-pid_x = pid.PID(0.01, 0.000, 0.0, 15*math.pi/180, -15*math.pi/180, 0.01)
-pid_y = pid.PID(0.01, 0.0, 0.0, 15*math.pi/180, -15*math.pi/180, 0.01)
+pid_x = pid.PID(0.01, 0.000, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
+pid_y = pid.PID(0.01, 0.0, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_z = pid.PID(0.1, 0.01, 0.1, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
 
 

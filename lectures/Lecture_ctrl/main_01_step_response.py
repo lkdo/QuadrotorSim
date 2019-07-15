@@ -73,9 +73,9 @@ omega_ref = np.zeros(3)
 ref = np.block([thrust_ref,omega_ref])
 
 tau = 0.005
-pid_rollrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
-pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
-pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
+pid_rollrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
+pid_pitchrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
+pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
 
 # Simulation parameters
 ##########################################################
@@ -85,7 +85,7 @@ dt_log = 0.01
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-T_sim = 20
+T_sim = 25
 """ Total time of the simulation """
 
 # Predefined omega-reference to step 
@@ -93,8 +93,8 @@ T_sim = 20
 omega_ref_step = np.zeros([int(T_sim/dt_ctrl_rate)+1,3])
 omega_ref_step[int(3/dt_ctrl_rate)+1:int(6/dt_ctrl_rate),0] = 4*360*math.pi/180 # rad/sec
 omega_ref_step[int(7/dt_ctrl_rate)+1:int(10/dt_ctrl_rate),1] = 4*360*math.pi/180 # rad/sec
-omega_ref_step[int(11/dt_ctrl_rate)+1:int(14/dt_ctrl_rate),2] = 2*360*math.pi/180 # rad/sec
-omega_ref_step[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),:] = 1*360*math.pi/180 # rad/sec
+omega_ref_step[int(11/dt_ctrl_rate)+1:int(14/dt_ctrl_rate),2] = 4*360*math.pi/180 # rad/sec
+omega_ref_step[int(15/dt_ctrl_rate)+1:int(18/dt_ctrl_rate),:] = 2.5*360*math.pi/180 # rad/sec
 
 k = 0
 

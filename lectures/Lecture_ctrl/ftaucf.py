@@ -354,8 +354,9 @@ class QuadFTau_CF_S:
         return fb, taub
     
     def fztau2cmd(self,fztau):
-        
-        omegar = np.sqrt(self.invGamma@fztau)
+        tmp = self.invGamma@fztau
+        tmp[tmp < 0] = 0 
+        omegar = np.sqrt(tmp)
         cmd = self.omegar2input(omegar)
         
         return cmd    

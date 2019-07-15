@@ -78,9 +78,9 @@ pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
-pid_pitch = pid.PID(2, 0, 0, 2*360*math.pi/180, -2*360*math.pi/180, 0.01)
-pid_roll = pid.PID(2, 0, 0, 2*360*math.pi/180, -2*360**math.pi/180, 0.01)
-pid_yaw = pid.PID(3, 0, 0, 2*360*math.pi/180, -2*360**math.pi/180, 0.01)
+pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
+pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
 # Simulation parameters
 ##########################################################

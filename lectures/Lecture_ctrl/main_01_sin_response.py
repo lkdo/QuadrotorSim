@@ -92,9 +92,9 @@ T_sim = 55
 ##########################################################
 omega_ref_sin = np.zeros([int(T_sim/dt_ctrl_rate)+1,3])
 N = omega_ref_sin[int(3/dt_ctrl_rate)+1:int(13/dt_ctrl_rate),0].size
-l = 10 # how many full  2*PI in the 10 seconds 
+l = 4 # how many full  2*PI in the 10 seconds 
 freq = l/10 
-A = 360
+A = 2.5*360
 omega_ref_sin[int(3/dt_ctrl_rate)+1:int(13/dt_ctrl_rate),0] = A*math.pi/180*np.sin(
                                                                     2*math.pi*l/N*np.linspace(0,N-1,N) )
 omega_ref_sin[int(16/dt_ctrl_rate)+1:int(26/dt_ctrl_rate),1] = A*math.pi/180*np.sin(

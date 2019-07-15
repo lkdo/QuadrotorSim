@@ -78,9 +78,9 @@ pid_pitchrate = pid.PID(100,0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
 dt_ctrl_angle = 0.004  # 250 Hz
-pid_pitch = pid.PID(10, 0, 0, 1*360*math.pi/180, -1*360*math.pi/180, 0.01)
-pid_roll = pid.PID(10, 0, 0, 1*360*math.pi/180, -1*360**math.pi/180, 0.01)
-pid_yaw = pid.PID(5, 0, 0, 1*360*math.pi/180, -1*360**math.pi/180, 0.01)
+pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
+pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
 # Simulation parameters
 ##########################################################
@@ -99,7 +99,10 @@ angle_ref_step = np.zeros([int(T_sim/dt_ctrl_angle)+1,3])
 angle_ref_step[int(3/dt_ctrl_angle)+1:int(6/dt_ctrl_angle),0] = 60*math.pi/180 # rad/sec
 angle_ref_step[int(7/dt_ctrl_angle)+1:int(10/dt_ctrl_angle),1] = 60*math.pi/180 # rad/sec
 angle_ref_step[int(11/dt_ctrl_angle)+1:int(14/dt_ctrl_angle),2] = 170*math.pi/180 # rad/sec
-angle_ref_step[int(17/dt_ctrl_angle)+1:int(20/dt_ctrl_angle),:] = 60*math.pi/180 # rad/sec
+
+angle_ref_step[int(17/dt_ctrl_angle)+1:int(20/dt_ctrl_angle),0] = 40*math.pi/180 # rad/sec
+angle_ref_step[int(17/dt_ctrl_angle)+1:int(20/dt_ctrl_angle),1] = 40*math.pi/180 # rad/sec
+angle_ref_step[int(17/dt_ctrl_angle)+1:int(20/dt_ctrl_angle),2] = 40*math.pi/180 # rad/sec
 
 #angle_ref_step[int(3/dt_ctrl_angle)+1:int(6/dt_ctrl_angle),0] = 80*math.pi/180 # rad/sec
 #angle_ref_step[int(6/dt_ctrl_angle)+1:int(10/dt_ctrl_angle),0] = -80*math.pi/180 # rad/sec
