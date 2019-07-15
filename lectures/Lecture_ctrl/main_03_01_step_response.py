@@ -105,13 +105,13 @@ pos_ref_step = np.zeros([int(T_sim/dt_ctrl_pos)+1,4])
 pos_ref_step[:,2] = 3.0
 
 pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),0] = 10.0
-pos_ref_step[int(13/dt_ctrl_pos)+1:int(23/dt_ctrl_pos),0] = 0.0
+pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),3] = 120*math.pi/180
 
 pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),1] = 10.0
-pos_ref_step[int(33/dt_ctrl_pos)+1:int(43/dt_ctrl_pos),1] = 0.0
+pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),3] = 120*math.pi/180
 
 pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),2] = 13.0
-pos_ref_step[int(53/dt_ctrl_pos)+1:int(63/dt_ctrl_pos),2] = 3.0
+pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),3] = 120*math.pi/180
 
 k = 0
 
