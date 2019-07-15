@@ -102,7 +102,7 @@ t = 0
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "Manual_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = "Manual_PosCtrl_02"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)

@@ -82,7 +82,7 @@ pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
 pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
-dt_ctrl_pos = 0.2  # 5 Hz
+dt_ctrl_pos = 0.02  # 50 Hz
 pid_x = pid.PID(0.01, 0.000, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_y = pid.PID(0.01, 0.0, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_z = pid.PID(0.1, 0.01, 0.1, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
@@ -96,7 +96,7 @@ dt_log = 0.1
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-T_sim = 30
+T_sim = 70
 """ Total time of the simulation """
 
 # Predefined omega-reference to step 
@@ -104,15 +104,21 @@ T_sim = 30
 pos_ref_step = np.zeros([int(T_sim/dt_ctrl_pos)+1,4])
 pos_ref_step[:,2] = 3.0
 
-pos_ref_step[int(3/dt_ctrl_pos)+1:int(23/dt_ctrl_pos),0] = 10.0
+pos_ref_step[int(3/dt_ctrl_pos)+1:int(13/dt_ctrl_pos),0] = 10.0
+pos_ref_step[int(13/dt_ctrl_pos)+1:int(23/dt_ctrl_pos),0] = 0.0
 
+pos_ref_step[int(23/dt_ctrl_pos)+1:int(33/dt_ctrl_pos),1] = 10.0
+pos_ref_step[int(33/dt_ctrl_pos)+1:int(43/dt_ctrl_pos),1] = 0.0
+
+pos_ref_step[int(43/dt_ctrl_pos)+1:int(53/dt_ctrl_pos),2] = 13.0
+pos_ref_step[int(53/dt_ctrl_pos)+1:int(63/dt_ctrl_pos),2] = 3.0
 
 k = 0
 
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "StepResponse_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = "StepResponse_PosCtrl_01"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)

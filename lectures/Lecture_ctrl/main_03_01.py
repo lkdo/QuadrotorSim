@@ -82,7 +82,7 @@ pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
 pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
-dt_ctrl_pos = 0.2  # 5 Hz
+dt_ctrl_pos = 0.02  # 50 Hz
 pid_x = pid.PID(0.01, 0.000, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_y = pid.PID(0.01, 0.0, 0.01, 40*math.pi/180, -40*math.pi/180, 0.01)
 pid_z = pid.PID(0.1, 0.01, 0.1, 3*qrb.mass*envir.g, -3*qrb.mass*envir.g, 0.1)
@@ -102,7 +102,7 @@ t = 0
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "Manual_PosCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = "Manual_PosCtrl_01"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
