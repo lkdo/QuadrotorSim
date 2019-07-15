@@ -82,9 +82,9 @@ pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
 pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
-dt_ctrl_pos = 0.2  # 5 Hz
-K1 = np.array([[-2.5,0],[0,-0.2]])
-K2 = np.array([[-2.5,0],[0,-0.2]])
+dt_ctrl_pos = 0.02  # 50 Hz
+K1 = np.array([[-2.5,0],[0,-2.5]])
+K2 = np.array([[-2.5,0],[0,-2.5]])
 K3 = -5
 K4 = -5
 
