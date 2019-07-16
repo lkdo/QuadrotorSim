@@ -25,7 +25,6 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 import numpy as np
-import math
 import matplotlib.pyplot as plt
 import os 
 

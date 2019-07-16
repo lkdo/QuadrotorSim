@@ -86,6 +86,7 @@ class PosController_01:
         self.K2 = np.array([[-2.5,0],[0,-2.5]])
         self.K3 = -5
         self.K4 = -5
+        self.max_thrust = 0.8*0.638
 
     def run(self, ref_pos, meas_pos, meas_ve, meas_yaw, mass):
        
@@ -101,7 +102,69 @@ class PosController_01:
         if (v_max > V):
             rp_ref = (V/v_max)*rp_ref[0:2]
         
+        
         thrust_ref = mass*envir.g + mass*( self.K3*meas_ve[2]
                                                                + self.K4*(meas_pos[2]-ref_pos[2]) ) 
-         
+        
+        # And saturate 
+        if ( thrust_ref > self.max_thrust ):
+            thrust_ref = self.max_thrust
+        elif (thrust_ref < 0 ):
+            thrust_ref = 0
+        
         return rp_ref, thrust_ref
+    
+class PosController_02:
+
+    def __init__(self):
+        
+          self.dt_ctrl_pos_v = 0.02  # 50 Hz
+          self.pid_vx = pid.PID(4, 0, 0, 20, -20, 0.01)
+          self.pid_vy = pid.PID(4, 0, 0, 20, -20, 0.01)
+          self.pid_vz = pid.PID(5, 0, 0, 20, -20, 0.01)
+
+          self.dt_ctrl_pos_p = 0.02  # 50 Hz
+          self.pid_x = pid.PID(1, 0, 0, 20, -20, 0.01)
+          self.pid_y = pid.PID(1, 0, 0, 20, -20, 0.01)
+          self.pid_z = pid.PID(4, 0, 0, 10, -10, 0.01)
+          
+          self.max_thrust =  0.8*0.638
+    
+    def run_vel(self, ref_ve, meas_ve, meas_yaw, mass):
+        
+        rp_ref = np.zeros(2)
+        
+        T1 = self.pid_vx.run(ref_ve[0]-meas_ve[0],self.dt_ctrl_pos_v)
+        T2 = self.pid_vy.run(ref_ve[1]-meas_ve[1],self.dt_ctrl_pos_v)
+        
+        R = np.array([[math.sin(meas_yaw), -math.cos(meas_yaw)],
+                              [math.cos(meas_yaw), math.sin(meas_yaw)]])
+        
+        rp_ref = 1/envir.g *R@np.array([T1,T2])
+        
+        # and  saturate them 
+        V = 40 * math.pi /180 
+        v_max = np.max(abs(rp_ref))
+        if (v_max > V):
+            rp_ref = (V/v_max)*rp_ref
+        
+        T3 = self.pid_vz.run(ref_ve[2] - meas_ve[2], self.dt_ctrl_pos_v)
+        thrust_ref = mass*envir.g + mass*T3 
+ 
+       # And saturate 
+        if ( thrust_ref > self.max_thrust ):
+            thrust_ref = self.max_thrust
+        elif (thrust_ref < 0 ):
+            thrust_ref = 0    
+        
+        return rp_ref, thrust_ref
+    
+    def run_pos(self, ref_pos, meas_pos):
+        
+        ref_ve = np.zeros(3)
+        
+        ref_ve[0] = self.pid_x.run(ref_pos[0] - meas_pos[0], self.dt_ctrl_pos_p)
+        ref_ve[1] = self.pid_y.run(ref_pos[1] - meas_pos[1], self.dt_ctrl_pos_p)
+        ref_ve[2] = self.pid_z.run(ref_pos[2] - meas_pos[2], self.dt_ctrl_pos_p)
+        
+        return ref_ve

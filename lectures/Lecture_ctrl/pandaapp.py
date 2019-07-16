@@ -25,7 +25,6 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 # Global imports 
-import numpy as np 
 import math 
 
 # Panda 3D imports 
@@ -130,18 +129,20 @@ class ReadKeys(DirectObject.DirectObject):
     def call_dz(self, when):
         if self.ctrl_mode == 1 or self.ctrl_mode == 2:
             self.ref[0] += 0.0001*envir.g # 0.1 gram more thrust
-            self.panda3D_app.screenText_ref(self.ref)
+            if self.ref[0] > 0.8*0.638:
+               self.ref[0] = 0.8*0.638
         elif self.ctrl_mode == 3:
-            self.ref[2] += 1
+            self.ref[2] += 1                 # meters 
        
         self.panda3D_app.screenText_ref(self.ref)
         
     def call_dz_neg(self, when):
         if self.ctrl_mode == 1 or self.ctrl_mode == 2:
             self.ref[0] -=  0.0001*envir.g # 0.1 gram less thrust
-            self.panda3D_app.screenText_ref(self.ref)
+            if self.ref[0] < 0:
+                self.ref[0] = 0 
         elif self.ctrl_mode == 3:
-            self.ref[2] += -1
+            self.ref[2] += -1           #meters
         
         self.panda3D_app.screenText_ref(self.ref)
         
