@@ -133,7 +133,7 @@ elif args.ref_mode == "ramp":
 
       ramp_1 = StepAndRampMetaSignal(43,53,20)
       ramp_2 = StepAndRampMetaSignal(63,73,-20)
-      pos_z_ref = utils.build_signal_ramp(0,80,0,ramp_1, ramp_2)
+      pos_z_ref = utils.build_signal_ramp(0,80,3,ramp_1, ramp_2)
 
       ramp_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
       ramp_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
@@ -157,7 +157,7 @@ elif args.ref_mode == "sin":
 
     sin_1 = SinMetaSignal(43,10,1,1/f,20)
     sin_2 = SinMetaSignal(63,10,1,1/f,20)
-    pos_z_ref = utils.build_signal_sin(0,80,0,sin_1, sin_2)
+    pos_z_ref = utils.build_signal_sin(0,80,3,sin_1, sin_2)
     
     sin_1 = SinMetaSignal(3,60*math.pi/180,1,1/f,20)
     sin_2 = SinMetaSignal(23,60*math.pi/180,1,1/f,20)
