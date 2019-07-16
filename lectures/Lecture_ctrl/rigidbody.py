@@ -27,72 +27,9 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 import numpy as np
-import math
+
 import envir
-
-
-def rotm2exyz(R, sol=1):
-    """ Transforms a rotation matrix to Euler X-Y-Z (1-2-3) angles
-    
-    That is input matrix R = Rz(phi)*Ry(theta)*Rx(psi), 
-    and the output is [psi, theta, phi]. 
-    Implements the pseudocode from
-    "Computing Euler angles from a rotation matrix", 
-    by Gregory G. Slabaugh
-    """
-    
-    if R[3-1,1-1]!=1 and R[3-1,1-1]!=-1:
-        theta1 = -math.asin(R[3-1,1-1])
-        theta2 = math.pi - theta1
-        psi1 = math.atan2(R[3-1,2-1]/math.cos(theta1),
-                          R[3-1,3-1]/math.cos(theta1))
-        psi2 = math.atan2(R[3-1,2-1]/math.cos(theta2),
-                          R[3-1,3-1]/math.cos(theta2))
-        phi1 = math.atan2(R[2-1,1-1]/math.cos(theta1),
-                          R[1-1,1-1]/math.cos(theta1))
-        phi2 = math.atan2(R[2-1,1-1]/math.cos(theta2),
-                          R[1-1,1-1]/math.cos(theta2))
-       
-        # Choose one set of rotations
-        if sol == 1:
-            return np.array([psi1,theta1,phi1])
-        else:
-            return np.array([psi2,theta2,phi2])
-        
-    else:
-        phi = 0 # can be anything 
-        if R[3-1,1-1] == -1:
-            theta = math.pi/2
-            psi = phi + math.atan2(R[1-1,2-1],R[1-1,3-1])
-        else:
-            theta = -math.pi/2
-            psi = -phi + math.atan2(-R[1-1,2-1],R[1-1,3-1])
-        return np.array([psi,theta,phi])
-##########################################################    
-
-
-def quat2rotm(q): 
-    """ Takes a quaternion and returns the rotation matrix"""
-    
-    return 2*np.array([
-                      [ q[0]**2+q[1]**2-0.5,
-                       (q[1]*q[2]-q[0]*q[3]), 
-                       (q[1]*q[3]+q[0]*q[2])   ],
-                      [ (q[1]*q[2]+q[0]*q[3]),
-                        (q[0]**2+q[2]**2-0.5),
-                        (-q[0]*q[1]+q[2]*q[3]) ],
-                      [ (q[1]*q[3]-q[0]*q[2]), 
-                        (q[2]*q[3]+q[0]*q[1]),
-                        q[0]**2+q[3]**2-0.5 ] 
-                    ])  
-##########################################################
-
-    
-def skew(X):
-    """  Returns the skew-symmetric matrix form of the input vector """
-    return np.array([[0,-X[3-1],X[2-1]],[X[3-1],0,-X[1-1]],[-X[2-1],X[1-1],0]])
-##########################################################    
-
+import utils 
 
 class rigidbody:
     """ Holds the states and parameters to describe a Rigid Body, 
@@ -107,10 +44,10 @@ class rigidbody:
         self.q = q
         """ quaternion, in the form [ scalar vector3 ]   """
         
-        self.rotmb2e = quat2rotm(q)
+        self.rotmb2e = utils.quat2rotm(q)
         """ the rotation matrix """
         
-        self.rpy = rotm2exyz(quat2rotm(self.q),1) 
+        self.rpy = utils.rotm2exyz(utils.quat2rotm(self.q),1) 
         
         self.ve = ve 
         """ velocity vector in earth frame, float in R3, m/s """     
@@ -177,13 +114,13 @@ class rigidbody:
         #                )
         
         # dve/dt = 1/m*Rbe*fb + g
-        self.d_ve = 1/self.mass*quat2rotm(self.q)@fb + np.array([0,0,-envir.g ])
+        self.d_ve = 1/self.mass*utils.quat2rotm(self.q)@fb + np.array([0,0,-envir.g ])
     
         # domegab/dt = I^(-1)*(-skew(omegab)*I*omegabb + taub)
         self.d_omegab = (np.dot(
                        self.invI, 
                        np.dot(
-                               -skew(self.omegab),
+                               -utils.skew(self.omegab),
                                np.dot(self.I,self.omegab)
                              )
                        + taub
@@ -199,8 +136,8 @@ class rigidbody:
         # unpack the vector state
         self.pos = X[1-1:3]
         self.q = X[4-1:7] / np.linalg.norm(X[4-1:7])  #update and normalize 
-        self.rotmb2e = quat2rotm(self.q)
-        self.rpy = rotm2exyz(self.rotmb2e)
+        self.rotmb2e = utils.quat2rotm(self.q)
+        self.rpy = utils.rotm2exyz(self.rotmb2e)
         self.ve = X[8-1:10]
         self.vb =np.transpose(self.rotmb2e)@self.ve
         self.omegab = X[11-1:13]

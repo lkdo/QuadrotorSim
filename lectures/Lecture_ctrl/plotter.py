@@ -205,37 +205,6 @@ class Plotter:
         fig.savefig(fullname)
         plt.close(fig)
         
-        # alpha ref 
-        fig, ax_lst = plt.subplots(3, 1)
-        fig.suptitle('Alpha Ref vs Alpha ', fontsize = self.big_font_size)
-        time = np.asarray(log.attstab_time)
-        alpha_ref = np.asarray(log.attstab_alpha_ref)
-        alpha = np.asarray(log.rb_alphab)
-        
-        ax_lst[0].plot( time, alpha_ref[:,0])
-        ax_lst[0].plot( time, alpha[:,0])
-        ax_lst[0].set_title("Alpha X")
-        ax_lst[0].legend(("Alpha X Ref","Alpha X"))
-        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Ang. Acc [$^\circ$/$^2$]')
-        
-        ax_lst[1].plot( time, alpha_ref[:,1])
-        ax_lst[1].plot( time, alpha[:,1])
-        ax_lst[1].set_title("Alpha Y")
-        ax_lst[1].legend(("Alpha Y Ref","Alpha Y"))
-        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Ang. Acc [$^\circ$/$^2$]')
-        
-        ax_lst[2].plot( time, alpha_ref[:,2])
-        ax_lst[2].plot( time, alpha[:,2])
-        ax_lst[2].set_title("Alpha Z")
-        ax_lst[2].legend(("Alpha Z Ref","Alpha Z"))
-        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Ang. Acc [$^\circ$/$^2$]')
-        
-        self.fig_style_1(fig, ax_lst)
-        
-        fullname = location + "/" +  log.basename + "__attstab_alpha_ref.png"
-        fig.savefig(fullname)
-        plt.close(fig)
-        
         # tau ref 
         
         fig, ax_lst = plt.subplots(3, 1)

@@ -28,8 +28,9 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import time
 import datetime
-import math
-import envir
+import argparse
+import math 
+from dataclasses import dataclass
 
 # Import local files
 import pandaapp
@@ -37,8 +38,25 @@ import ftaucf
 import rigidbody
 import logger 
 import plotter
-import pid
 import envir  
+import ctrlatt
+import utils 
+
+@dataclass
+class StepAndRampMetaSignal:
+    t_start: float
+    t_end: float 
+    value: float
+
+@dataclass
+class SinMetaSignal:
+    t_start: float
+    amplitude: float
+    no_periods: float 
+    period: float 
+    no_points_per_period: float 
+
+name1 = "AttControl"
 
 # Initialization values for the quadrotor
 ##########################################################
@@ -52,8 +70,6 @@ ve = np.array([0,0,0])
 """ linear velocity vector in the earth-fixed frame """
 omegab = np.array([0,0,0])
 """ angular velocity vector in the body-fixed frame """
-cmd = np.array([37278,37278,37278,37278])
-""" intital command """
 qftau = ftaucf.QuadFTau_CF(0,plus)
 """ Model for the forces and torques of the crazyflie """
 qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius, 
@@ -62,26 +78,77 @@ qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius,
 qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I)
 """ Rigif body motion object  """
 
-# Initialize controller assets 
+# Initialize controller  
 ##########################################################
-alpha_ref = np.zeros(3)
+att_controller = ctrlatt.AttController_01()
+
+omegab_ref = np.zeros(3)
 tau_ref = np.zeros(3)
-angle_ref = np.zeros(3)
-omega_ref = np.zeros(3)
-
 thrust_ref = qrb.mass*envir.g
-ref = np.array([thrust_ref,0,0,0])
+rpy_ref = np.zeros(3)
+ref = np.block([thrust_ref,omegab_ref])
 
-dt_ctrl_rate = 0.002 # 500 Hz
-pid_rollrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
+# Predefined controller references - for testing 
+##########################################################
+arg_parser = argparse.ArgumentParser()
+arg_parser.add_argument("ref_mode", help=""" Choose between an angle reference
+                        template. Values are: step, ramp, sin, manual  """ )
+args = arg_parser.parse_args()
 
-dt_ctrl_angle = 0.004  # 250 Hz
-pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
-pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
-pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+if args.ref_mode == "step":
+      
+      name2 = "step"
+     
+      step_1 = StepAndRampMetaSignal(3,6,80*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      roll_ref = utils.build_signal_step(0,27,0,step_1, step_2)
 
+      step_1 = StepAndRampMetaSignal(9,12,80*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      pitch_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(15,18,170*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      yaw_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+
+elif args.ref_mode == "ramp":
+    
+      name2 = "ramp"
+      
+      step_1 = StepAndRampMetaSignal(3,6,80*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      roll_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(9,12,80*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      pitch_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(15,18,170*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,40*math.pi/180)
+      yaw_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+elif args.ref_mode == "sin":
+    
+    name2 = "sin"
+    
+    f = 1/3
+    
+    sin_1 = SinMetaSignal(3,80*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,40*math.pi/180,1,1/f,20)
+    roll_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+
+    sin_1 = SinMetaSignal(9,80*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,40*math.pi/180,1,1/f,20)
+    pitch_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+
+    sin_1 = SinMetaSignal(15,180*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,40*math.pi/180,1,1/f,20)
+    yaw_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+    
+else:
+
+      name2 = "manual"
+      
 # Simulation parameters
 ##########################################################
 dt_sim = 0.0005  
@@ -96,7 +163,7 @@ t = 0
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "Manual_AngleCtrl"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = name1 + "_" + name2 +datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
@@ -112,43 +179,40 @@ readkeys = pandaapp.ReadKeys(ref, 2, panda3D_app)
 while readkeys.exitpressed is False :
 
     #------------------------------------begin controller --------------------------------------------
-    if abs(t/dt_ctrl_angle - round(t/dt_ctrl_angle)) < 0.000001 :
+    if abs(t/att_controller.dt_ctrl_angle - round(t/att_controller.dt_ctrl_angle)) < 0.000001 :
          
-        # perfect measurement
-        angle_ref = readkeys.ref[1:4]
+        #reference
+        if ( args.ref_mode == "manual" ):
+            rpy_ref = readkeys.ref[1:4]
+        else:
+            rpy_ref[0] = utils.give_signal(roll_ref, t)
+            rpy_ref[1] = utils.give_signal(pitch_ref, t)
+            rpy_ref[2] = utils.give_signal(yaw_ref, t)
+            if ( t > max(roll_ref[-1,0], pitch_ref[-1,0], yaw_ref[-1,0]) ):
+                readkeys.exitpressed = True 
         
+        # perfect measurement
         meas_rpy = qrb.rpy
-               
-        omega_ref[0] = pid_roll.run(angle_ref[0]-meas_rpy[0],dt_ctrl_angle)
+        
+        # controller call 
+        omegab_ref = att_controller.run_angle(rpy_ref, meas_rpy)
+        
+    if abs(t/att_controller.dt_ctrl_rate - round(t/att_controller.dt_ctrl_rate)) < 0.000001 :
+        
+        # thrust comes alwyas from the keyboard 
+        thrust_ref = readkeys.ref[0]        
+        
+        # Get Measurement (perfect measurement)
+        omegab_meas = qrb.omegab
        
-        omega_ref[1] = pid_pitch.run(angle_ref[1]-meas_rpy[1],dt_ctrl_angle)
+        # Controller call 
+        tau_ref = att_controller.run_rate(omegab_ref,omegab_meas,qrb.I)
         
-        err_yaw = angle_ref[2]-meas_rpy[2]
-        if (err_yaw > math.pi):
-            err_yaw = 2*math.pi - err_yaw
-        elif (err_yaw < -math.pi):
-            err_yaw = 2*math.pi + err_yaw
-        omega_ref[2] = pid_yaw.run(err_yaw,dt_ctrl_angle)
-        
-    if abs(t/dt_ctrl_rate - round(t/dt_ctrl_rate)) < 0.000001 :
-        
-        # perfect measurement
-        meas_omegab = qrb.omegab
-        
-        # omega_ref is set by the previous PID
-        thrust_ref = readkeys.ref[0]
-        
-        alpha_ref[0] = pid_rollrate.run(omega_ref[0]-meas_omegab[0], dt_ctrl_rate)
-        alpha_ref[1] = pid_pitchrate.run(omega_ref[1]-meas_omegab[1],dt_ctrl_rate)
-        alpha_ref[2] = pid_yawrate.run(omega_ref[2]-meas_omegab[2],dt_ctrl_rate)
-        
-        tau_ref = qftau.I@alpha_ref + rigidbody.skew(meas_omegab)@qftau.I@meas_omegab
-        
-        # Calculate the command based on tau_ref and thrust_ref 
+        # Control allocation; use qftau_s model 
         cmd = qftau_s.fztau2cmd(np.array([thrust_ref,tau_ref[0],tau_ref[1],tau_ref[2]]))
    
     #------------------------------------------ end controller --------------------------------------
-    
+   
     # Calculate body-based forces and torques
     fb, taub = qftau.input2ftau(cmd,qrb.vb)
     
@@ -165,9 +229,8 @@ while readkeys.exitpressed is False :
         
     # Logging frequency    
     if abs(t/dt_log - round(t/dt_log)) < 0.000001 :
-        logger.log_attstab(t,np.array([angle_ref[0], angle_ref[1], angle_ref[2]]),
-                                      np.array([omega_ref[0],omega_ref[1],omega_ref[2]]),
-                                      np.array([alpha_ref[0],alpha_ref[1],alpha_ref[2]]),
+        logger.log_attstab(t,np.array([rpy_ref[0], rpy_ref[1], rpy_ref[2]]),
+                                      np.array([omegab_ref[0],omegab_ref[1],omegab_ref[2]]),
                                       np.array([tau_ref[0],tau_ref[1],tau_ref[2]]) )
         logger.log_rigidbody(t, qrb)
         fe = qrb.rotmb2e@fb + qrb.mass*np.array([0,0,-9.80665])

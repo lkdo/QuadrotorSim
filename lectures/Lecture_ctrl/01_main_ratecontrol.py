@@ -28,8 +28,9 @@ __license__ = "GNU GPLv3"
 import numpy as np
 import time
 import datetime
-import math
-import envir
+import argparse
+import math 
+from dataclasses import dataclass
 
 # Import local files
 import pandaapp
@@ -37,11 +38,29 @@ import ftaucf
 import rigidbody
 import logger 
 import plotter
-import pid  
+import envir  
+import ctrlatt
+import utils 
+
+@dataclass
+class StepAndRampMetaSignal:
+    t_start: float
+    t_end: float 
+    value: float
+
+@dataclass
+class SinMetaSignal:
+    t_start: float
+    amplitude: float
+    no_periods: float 
+    period: float 
+    no_points_per_period: float 
+
+name1 = "RateControl"
 
 # Initialization values for the quadrotor
 ##########################################################
-plus = False
+plus = True
 """ Quadrotor configuration, plus or cross """
 pos = np.array([0,0,3])
 """ position vetcor in meters """
@@ -51,8 +70,6 @@ ve = np.array([0,0,0])
 """ linear velocity vector in the earth-fixed frame """
 omegab = np.array([0,0,0])
 """ angular velocity vector in the body-fixed frame """
-cmd = np.array([37278,37278,37278,37278])
-""" intital command """
 qftau = ftaucf.QuadFTau_CF(0,plus)
 """ Model for the forces and torques of the crazyflie """
 qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius, 
@@ -61,60 +78,92 @@ qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius,
 qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I)
 """ Rigif body motion object  """
 
-# Initialize controller assets 
+# Initialize controller 
 ##########################################################
-dt_ctrl_rate = 0.002 # 500 Hz
+att_controller = ctrlatt.AttController_01()
 
-alpha_ref = np.zeros(3)
+omegab_ref = np.zeros(3)
 tau_ref = np.zeros(3)
-
 thrust_ref = qrb.mass*envir.g
-omega_ref = np.zeros(3)
-ref = np.block([thrust_ref,omega_ref])
+ref = np.block([thrust_ref,omegab_ref])
 
-tau = 0.005
-pid_rollrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
-pid_pitchrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
-pid_yawrate = pid.PID(100, 90, 0, 8*360*math.pi/180, -8*360*math.pi/180, tau)
+# Predefined controller references - for testing 
+##########################################################
+arg_parser = argparse.ArgumentParser()
+arg_parser.add_argument("ref_mode", help=""" Choose between an angular velocity reference
+                        template. Values are: step, ramp, sin, manual  """ )
+args = arg_parser.parse_args()
 
+if args.ref_mode == "step":
+      
+      name2 = "step"
+     
+      step_1 = StepAndRampMetaSignal(3,6,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_x_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(9,12,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_y_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(15,18,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_z_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+
+elif args.ref_mode == "ramp":
+    
+      name2 = "ramp"
+      
+      step_1 = StepAndRampMetaSignal(3,6,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_x_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(9,12,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_y_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+      step_1 = StepAndRampMetaSignal(15,18,4*360*math.pi/180)
+      step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
+      omegab_z_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+
+elif args.ref_mode == "sin":
+    
+    name2 = "sin"
+    
+    f = 1/3
+    
+    sin_1 = SinMetaSignal(3,4*360*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
+    omegab_x_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+
+    sin_1 = SinMetaSignal(9,4*360*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
+    omegab_y_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+
+    sin_1 = SinMetaSignal(15,4*360*math.pi/180,1,1/f,20)
+    sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
+    omegab_z_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+
+    
+else:
+
+      name2 = "manual"
+      
 # Simulation parameters
 ##########################################################
 dt_sim = 0.0005  
 """ integration step """
-dt_log = 0.01
+dt_log = 0.1
 """ logging step """
 dt_vis = 1/60   
 """ visualization frame step """
-T_sim = 55
-""" Total time of the simulation """
-
-# Predefined omega-reference to step 
-##########################################################
-omega_ref_sin = np.zeros([int(T_sim/dt_ctrl_rate)+1,3])
-N = omega_ref_sin[int(3/dt_ctrl_rate)+1:int(13/dt_ctrl_rate),0].size
-l = 4 # how many full  2*PI in the 10 seconds 
-freq = l/10 
-A = 2.5*360
-omega_ref_sin[int(3/dt_ctrl_rate)+1:int(13/dt_ctrl_rate),0] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-omega_ref_sin[int(16/dt_ctrl_rate)+1:int(26/dt_ctrl_rate),1] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-omega_ref_sin[int(29/dt_ctrl_rate)+1:int(39/dt_ctrl_rate),2] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-
-omega_ref_sin[int(42/dt_ctrl_rate)+1:int(52/dt_ctrl_rate),0] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-omega_ref_sin[int(42/dt_ctrl_rate)+1:int(52/dt_ctrl_rate),1] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-omega_ref_sin[int(42/dt_ctrl_rate)+1:int(52/dt_ctrl_rate),2] = A*math.pi/180*np.sin(
-                                                                    2*math.pi*l/N*np.linspace(0,N-1,N) )
-
-k = 0
+t = 0
+""" time variable """
 
 # Initialize the logger & plotter 
 ##########################################################
 ts = time.time()
-name = "SinResponse_Omega"+datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
+name = name1 + "_" + name2 +datetime.datetime.fromtimestamp(ts).strftime("_%Y%m%d%H%M%S")
 """ Name of run to save to log files and plots """
 fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
@@ -127,25 +176,31 @@ readkeys = pandaapp.ReadKeys(ref, 1, panda3D_app)
 
 # The main simulation loop     
 #########################################################
-for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
-
+while readkeys.exitpressed is False :
+    
     #------------------------------------begin controller --------------------------------------------
     
-    if abs(t/dt_ctrl_rate - round(t/dt_ctrl_rate)) < 0.000001 :
+    if abs(t/att_controller.dt_ctrl_rate - round(t/att_controller.dt_ctrl_rate)) < 0.000001 :
         
-        # perfect measurement
-        meas_omegab = qrb.omegab 
+        # Get reference 
+        if ( args.ref_mode == "manual" ):
+            omegab_ref = readkeys.ref[1:4]
+        else:
+            omegab_ref[0] = utils.give_signal(omegab_x_ref, t)
+            omegab_ref[1] = utils.give_signal(omegab_y_ref, t)
+            omegab_ref[2] = utils.give_signal(omegab_z_ref, t)
+            if ( t > max(omegab_x_ref[-1,0], omegab_y_ref[-1,0], omegab_z_ref[-1,0]) ):
+                readkeys.exitpressed = True 
+
+        # thrust comes alwyas from the keyboard 
+        thrust_ref = readkeys.ref[0]        
         
-        omega_ref = omega_ref_sin[k,:];  k += 1
-        thrust_ref = readkeys.ref[0]
+        # Get Measurement (perfect measurement)
+        omegab_meas = qrb.omegab
+       
+        tau_ref = att_controller.run_rate(omegab_ref,omegab_meas,qrb.I)
         
-        alpha_ref[0] = pid_rollrate.run(omega_ref[0]-meas_omegab[0], dt_ctrl_rate)
-        alpha_ref[1] = pid_pitchrate.run(omega_ref[1]-meas_omegab[1],dt_ctrl_rate)
-        alpha_ref[2] = pid_yawrate.run(omega_ref[2]-meas_omegab[2],dt_ctrl_rate)
-        
-        tau_ref = qftau.I@alpha_ref + rigidbody.skew(meas_omegab)@qftau.I@meas_omegab
-        
-        # Calculate the command based on tau_ref and thrust_ref 
+        # Control allocation; use qftau_s model 
         cmd = qftau_s.fztau2cmd(np.array([thrust_ref,tau_ref[0],tau_ref[1],tau_ref[2]]))
    
     #------------------------------------------ end controller --------------------------------------
@@ -156,6 +211,9 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
     # Run the kinematic / time forward
     qrb.run_quadrotor(dt_sim, fb, taub)
 
+    # Time has increased now
+    t = t + dt_sim
+     
     # Visualization frequency    
     if abs(t/dt_vis - round(t/dt_vis)) < 0.000001 :
         panda3D_app.taskMgr.step()
@@ -164,8 +222,7 @@ for t in np.arange(dt_sim,T_sim+dt_sim,dt_sim):
     # Logging frequency    
     if abs(t/dt_log - round(t/dt_log)) < 0.000001 :
         logger.log_attstab(t,np.zeros(3),
-                                      np.array([omega_ref[0],omega_ref[1],omega_ref[2]]),
-                                      np.array([alpha_ref[0],alpha_ref[1],alpha_ref[2]]),
+                                      np.array([omegab_ref[0],omegab_ref[1],omegab_ref[2]]),
                                       np.array([tau_ref[0],tau_ref[1],tau_ref[2]]) )
         logger.log_rigidbody(t, qrb)
         fe = qrb.rotmb2e@fb + qrb.mass*np.array([0,0,-envir.g])

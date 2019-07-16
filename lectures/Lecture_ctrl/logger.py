@@ -56,7 +56,6 @@ class Logger:
         self.attstab_time = []
         self.attstab_angle_ref = []
         self.attstab_omega_ref = []
-        self.attstab_alpha_ref = []
         self.attstab_tau_ref = []
         
         self.posctrl_time = []
@@ -166,12 +165,11 @@ class Logger:
     # controller 
     ########################################
 
-    def log_attstab(self,t,angle_ref,omega_ref,alpha_ref,tau_ref):
+    def log_attstab(self,t,angle_ref,omega_ref,tau_ref):
        
         self.attstab_time.append(t)
         self.attstab_angle_ref.append(180/math.pi*angle_ref)
         self.attstab_omega_ref.append(180/math.pi*omega_ref)
-        self.attstab_alpha_ref.append(180/math.pi*alpha_ref)
         self.attstab_tau_ref.append(tau_ref)
               
     def log2file_attstab(self):
@@ -190,11 +188,9 @@ class Logger:
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c3 = np.array2string(self.attstab_omega_ref[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c4 = np.array2string(self.attstab_alpha_ref[i], precision = 8, 
+                c4 = np.array2string(self.attstab_tau_ref[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c5 = np.array2string(self.attstab_tau_ref[i], precision = 8, 
-                        suppress_small=False, sign=" ",floatmode ="fixed")
-                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"\n"
                 fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)
                 
