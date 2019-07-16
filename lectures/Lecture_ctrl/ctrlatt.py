@@ -44,7 +44,7 @@ class AttController_01:
         self.dt_ctrl_angle = 0.004  # 250 Hz
         
         self.pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
-        self.pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
+        self.pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
         self.pid_yaw = pid.PID(5, 0, 0, 2.5*360*math.pi/180, -2.5*360**math.pi/180, 0.01)
 
     def run_rate(self, ref_omegab, meas_omegab, J ):
@@ -142,7 +142,7 @@ class PosController_02:
         
         rp_ref = 1/envir.g *R@np.array([T1,T2])
         
-        # and  saturate them 
+        # and  saturate again 
         V = 40 * math.pi /180 
         v_max = np.max(abs(rp_ref))
         if (v_max > V):
@@ -151,7 +151,7 @@ class PosController_02:
         T3 = self.pid_vz.run(ref_ve[2] - meas_ve[2], self.dt_ctrl_pos_v)
         thrust_ref = mass*envir.g + mass*T3 
  
-       # And saturate 
+       # And saturate again
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
         elif (thrust_ref < 0 ):
