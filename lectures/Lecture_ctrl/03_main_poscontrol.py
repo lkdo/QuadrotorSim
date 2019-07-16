@@ -267,7 +267,7 @@ while readkeys.exitpressed is False :
         logger.log_attstab(t,np.array([rpy_ref[0],rpy_ref[1],rpy_ref[2]]),
                                       np.array([omegab_ref[0],omegab_ref[1],omegab_ref[2]]),
                                       np.array([tau_ref[0],tau_ref[1],tau_ref[2]]) )
-        logger.log_posctrl(t,np.array([ ref[0], ref[1], ref[2] ]))
+        logger.log_posctrl(t,np.array([ pos_ref[0], pos_ref[1], pos_ref[2] ]))
         logger.log_rigidbody(t, qrb)
         fe = qrb.rotmb2e@fb + qrb.mass*np.array([0,0,-envir.g])
         taue = qrb.rotmb2e@taub
