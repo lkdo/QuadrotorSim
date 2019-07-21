@@ -39,7 +39,7 @@ import rigidbody
 import logger 
 import plotter
 import envir  
-import ctrlatt
+import controllers
 import utils 
 
 @dataclass
@@ -80,8 +80,8 @@ qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I)
 
 # Initialize controller  
 ##########################################################
-att_controller = ctrlatt.AttController_01()
-pos_controller = ctrlatt.PosController_01()
+att_controller = controllers.AttController_01()
+pos_controller = controllers.PosController_01()
 
 omegab_ref = np.zeros(3)
 tau_ref = np.zeros(3)
