@@ -111,7 +111,7 @@ def build_signal_step(t_start, t_end, base_value, *arg):
          k += 1
      
          ref[k,0] = arg[i].t_start
-         ref[k,1] = arg[i].value
+         ref[k,1] = base_value + arg[i].value
          k += 1
          
          ref[k,0] = arg[i].t_end 

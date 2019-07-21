@@ -110,7 +110,7 @@ if args.ref_mode == "step":
       pos_y_ref = utils.build_signal_step(0,80,0,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(43,53,20)
-      step_2 = StepAndRampMetaSignal(63,73,-20)
+      step_2 = StepAndRampMetaSignal(63,73,20)
       pos_z_ref = utils.build_signal_step(0,80,3,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
@@ -132,14 +132,14 @@ elif args.ref_mode == "ramp":
       pos_y_ref = utils.build_signal_ramp(0,80,0,ramp_1, ramp_2)
 
       ramp_1 = StepAndRampMetaSignal(43,53,20)
-      ramp_2 = StepAndRampMetaSignal(63,73,-20)
+      ramp_2 = StepAndRampMetaSignal(63,73,20)
       pos_z_ref = utils.build_signal_ramp(0,80,3,ramp_1, ramp_2)
 
       ramp_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
       ramp_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
       ramp_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
       ramp_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
-      yaw_ref = utils.build_signal_ramp(0,80,0,ramp_1, ramp_2,ramp_3,ramp_4)
+      yaw_ref = utils.build_signal_ramp(0,80,0,ramp_1, ramp_2, ramp_3, ramp_4)
 
 elif args.ref_mode == "sin":
     

@@ -84,8 +84,8 @@ class PosController_01:
         self.dt_ctrl_pos = 0.02  # 50 Hz
         self.K1 = np.array([[-2.5,0],[0,-2.5]])
         self.K2 = np.array([[-2.5,0],[0,-2.5]])
-        self.K3 = -5
-        self.K4 = -5
+        self.K3 = -3
+        self.K4 = -3
         self.max_thrust = 0.8*0.638
 
     def run(self, ref_pos, meas_pos, meas_ve, meas_yaw, mass):
@@ -109,8 +109,8 @@ class PosController_01:
         # And saturate 
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
-        elif (thrust_ref < 0 ):
-            thrust_ref = 0
+        elif (thrust_ref < 0.9*mass*envir.g ):
+            thrust_ref =  0.9*mass*envir.g 
         
         return rp_ref, thrust_ref
     
@@ -154,8 +154,8 @@ class PosController_02:
        # And saturate again
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
-        elif (thrust_ref < 0 ):
-            thrust_ref = 0    
+        elif (thrust_ref < 0.9*mass*envir.g ):
+            thrust_ref =  0.9*mass*envir.g 
         
         return rp_ref, thrust_ref
     

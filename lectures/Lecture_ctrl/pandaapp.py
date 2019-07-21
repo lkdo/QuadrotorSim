@@ -85,8 +85,13 @@ class ReadKeys(DirectObject.DirectObject):
            if ( self.ref[2] > math.pi/180.0 * 80 ):
                 self.ref[2] = math.pi/180.0 * 80   
         elif self.ctrl_mode == 3:
-           self.ref[0] += 1 # distance x-axis meters
-            
+           if self.panda3D_app.camera_yaw is False:
+               self.ref[0] += 1 # distance x-axis meters
+           else:
+               h=self.panda3D_app.qrb.rpy[2]
+               self.ref[0] += 1*math.cos(h) # distance x-axis meters
+               self.ref[1] += 1*math.sin(h)
+               
         self.panda3D_app.screenText_ref(self.ref)
          
     def call_bw(self, when):
@@ -97,8 +102,13 @@ class ReadKeys(DirectObject.DirectObject):
            if ( self.ref[2] < - math.pi/180.0 * 80 ):
                 self.ref[2] = - math.pi/180.0 * 80   
         elif self.ctrl_mode == 3:
-           self.ref[0] += -1 # distance x-axis meters            
-           
+            if self.panda3D_app.camera_yaw is False:
+                self.ref[0] += -1 # distance x-axis meters            
+            else:
+                h=self.panda3D_app.qrb.rpy[2]
+                self.ref[0] += -1*math.cos(h) # distance x-axis meters
+                self.ref[1] += -1*math.sin(h)
+               
         self.panda3D_app.screenText_ref(self.ref)
         
     def call_left(self, when):
@@ -109,8 +119,13 @@ class ReadKeys(DirectObject.DirectObject):
             if ( self.ref[1] < - math.pi/180.0 * 80 ):
                 self.ref[1] = - math.pi/180.0 * 80
         elif self.ctrl_mode == 3:
-            self.ref[1] += 1
-        
+            if self.panda3D_app.camera_yaw is False:
+                self.ref[1] += 1
+            else:
+                h=self.panda3D_app.qrb.rpy[2]
+                self.ref[0] += -1*math.sin(h) # distance x-axis meters
+                self.ref[1] += 1*math.cos(h)
+               
         self.panda3D_app.screenText_ref(self.ref)
         
     def call_right(self, when):
@@ -122,8 +137,13 @@ class ReadKeys(DirectObject.DirectObject):
             if ( self.ref[1] >  math.pi/180.0 * 80 ):
                 self.ref[1] = math.pi/180.0 * 80
         elif self.ctrl_mode == 3:
-            self.ref[1] += -1
-        
+            if self.panda3D_app.camera_yaw is False:
+                self.ref[1] += -1
+            else:
+                h=self.panda3D_app.qrb.rpy[2]
+                self.ref[0] += 1*math.sin(h) # distance x-axis meters
+                self.ref[1] += -1*math.cos(h)
+                
         self.panda3D_app.screenText_ref(self.ref)
         
     def call_dz(self, when):

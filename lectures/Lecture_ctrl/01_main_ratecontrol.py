@@ -100,15 +100,15 @@ if args.ref_mode == "step":
      
       step_1 = StepAndRampMetaSignal(3,6,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_x_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+      omegab_x_ref = utils.build_signal_step(0,35,0,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(9,12,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_y_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+      omegab_y_ref = utils.build_signal_step(0,35,0,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(15,18,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_z_ref = utils.build_signal_step(0,27,0,step_1, step_2)
+      omegab_z_ref = utils.build_signal_step(0,35,0,step_1, step_2)
 
 elif args.ref_mode == "ramp":
     
@@ -116,15 +116,15 @@ elif args.ref_mode == "ramp":
       
       step_1 = StepAndRampMetaSignal(3,6,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_x_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+      omegab_x_ref = utils.build_signal_ramp(0,35,0,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(9,12,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_y_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+      omegab_y_ref = utils.build_signal_ramp(0,35,0,step_1, step_2)
 
       step_1 = StepAndRampMetaSignal(15,18,4*360*math.pi/180)
       step_2 = StepAndRampMetaSignal(21,24,4*360*math.pi/180)
-      omegab_z_ref = utils.build_signal_ramp(0,27,0,step_1, step_2)
+      omegab_z_ref = utils.build_signal_ramp(0,35,0,step_1, step_2)
 
 elif args.ref_mode == "sin":
     
@@ -134,15 +134,15 @@ elif args.ref_mode == "sin":
     
     sin_1 = SinMetaSignal(3,4*360*math.pi/180,1,1/f,20)
     sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
-    omegab_x_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+    omegab_x_ref = utils.build_signal_sin(0,35,0,sin_1, sin_2)
 
     sin_1 = SinMetaSignal(9,4*360*math.pi/180,1,1/f,20)
     sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
-    omegab_y_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+    omegab_y_ref = utils.build_signal_sin(0,35,0,sin_1, sin_2)
 
     sin_1 = SinMetaSignal(15,4*360*math.pi/180,1,1/f,20)
     sin_2 = SinMetaSignal(21,4*360*math.pi/180,1,1/f,20)
-    omegab_z_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
+    omegab_z_ref = utils.build_signal_sin(0,35,0,sin_1, sin_2)
 
     
 else:
