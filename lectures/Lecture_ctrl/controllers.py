@@ -79,7 +79,8 @@ class AttController_01:
         omega_ref[1] = self.pid_pitch.saturate()
         self.pid_pitch.antiwindup()
         
-        
+       # make possible 2*pi degrees yaw movement 
+       # by bridging  the discontinuity -pi + pi 
         err_yaw = ref_rpy[2]-meas_rpy[2]
         if (err_yaw > math.pi):
             err_yaw = -(2*math.pi - err_yaw)
@@ -134,15 +135,16 @@ class PosController_02:
 
     def __init__(self):
         
-          self.dt_ctrl_pos_v = 0.02  # 50 Hz
-          self.pid_vx = pid.PID(4, 0, 0, 9999, -9999, 0.01)
-          self.pid_vy = pid.PID(4, 0, 0, 9999, -9999, 0.01)
-          self.pid_vz = pid.PID(5, 0, 0, 9999, -9999, 0.01)
+          self.dt_ctrl_pos_v = 0.1  # 10 Hz
+          # saturation in the directional  way 
+          self.pid_vx = pid.PID(4, 0, 0, 9999, -9999, 0.1)
+          self.pid_vy = pid.PID(4, 0, 0, 9999, -9999, 0.1)
+          self.pid_vz = pid.PID(3, 0, 0, 9999, -9999, 0.1)
 
-          self.dt_ctrl_pos_p = 0.02  # 50 Hz
-          self.pid_x = pid.PID(1, 0, 0, 20, -20, 0.01)
-          self.pid_y = pid.PID(1, 0, 0, 20, -20, 0.01)
-          self.pid_z = pid.PID(4, 0, 0, 10, -10, 0.01)
+          self.dt_ctrl_pos_p = 0.1  # 10 Hz
+          self.pid_x = pid.PID(1, 0, 0, 20, -20, 0.1)
+          self.pid_y = pid.PID(1, 0, 0, 20, -20, 0.1)
+          self.pid_z = pid.PID(3, 0, 3.5, 10, -10, 0.1)
           
           self.max_thrust =  0.8*0.638
     
@@ -177,8 +179,8 @@ class PosController_02:
        # And saturate 
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
-        elif (thrust_ref < 0.5*mass*envir.g ):
-            thrust_ref =  0.5*mass*envir.g 
+        elif (thrust_ref < 0.8*mass*envir.g ):
+            thrust_ref =  0.8*mass*envir.g 
         
         # recalculate to do anti-windup
         T3 = (thrust_ref - mass*envir.g)/mass
