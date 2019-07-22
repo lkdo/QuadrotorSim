@@ -37,9 +37,9 @@ class AttController_01:
     
         self.dt_ctrl_rate = 0.002  # 500 Hz
 
-        self.pid_rollrate = pid.PID(100, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-        self.pid_pitchrate = pid.PID(100, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
-        self.pid_yawrate = pid.PID(100, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
+        self.pid_rollrate = pid.PID(50, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
+        self.pid_pitchrate = pid.PID(50, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
+        self.pid_yawrate = pid.PID(50, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
         
         self.dt_ctrl_angle = 0.004  # 250 Hz
         
@@ -52,8 +52,16 @@ class AttController_01:
         alpha_ref = np. zeros(3)
         
         alpha_ref[0] = self.pid_rollrate.run(ref_omegab[0]-meas_omegab[0], self.dt_ctrl_rate)
+        alpha_ref[0] = self.pid_rollrate.saturate()
+        self.pid_rollrate.antiwindup()
+        
         alpha_ref[1] = self.pid_pitchrate.run(ref_omegab[1]-meas_omegab[1],self.dt_ctrl_rate)
+        alpha_ref[1] = self.pid_pitchrate.saturate()
+        self.pid_pitchrate.antiwindup()
+        
         alpha_ref[2] = self.pid_yawrate.run(ref_omegab[2]-meas_omegab[2],self.dt_ctrl_rate)
+        alpha_ref[2] = self.pid_yawrate.saturate()
+        self.pid_yawrate.antiwindup()
         
         tau_ref = J@alpha_ref + utils.skew(meas_omegab)@J@meas_omegab
 
@@ -64,15 +72,23 @@ class AttController_01:
         omega_ref = np. zeros(3)
         
         omega_ref[0] = self.pid_roll.run(ref_rpy[0]-meas_rpy[0],self.dt_ctrl_angle)
+        omega_ref[0] = self.pid_roll.saturate()
+        self.pid_roll.antiwindup()
+        
         omega_ref[1] = self.pid_pitch.run(ref_rpy[1]-meas_rpy[1],self.dt_ctrl_angle)
+        omega_ref[1] = self.pid_pitch.saturate()
+        self.pid_pitch.antiwindup()
+        
         
         err_yaw = ref_rpy[2]-meas_rpy[2]
         if (err_yaw > math.pi):
-            err_yaw = 2*math.pi - err_yaw
+            err_yaw = -(2*math.pi - err_yaw)
         elif (err_yaw < -math.pi):
             err_yaw = 2*math.pi + err_yaw
         
         omega_ref[2] = self.pid_yaw.run(err_yaw,self.dt_ctrl_angle)
+        omega_ref[2] = self.pid_yaw.saturate()
+        self.pid_yaw.antiwindup()
         
         return omega_ref
     
@@ -97,7 +113,7 @@ class PosController_01:
         rp_ref  = 1/envir.g*R@( self.K1@meas_ve[0:2] 
                                                          + self.K2@(meas_pos[0:2]-ref_pos[0:2]) )
         # and  saturate them 
-        V = 40 * math.pi /180 
+        V = 30 * math.pi /180 
         v_max = np.max(abs(rp_ref))
         if (v_max > V):
             rp_ref = (V/v_max)*rp_ref[0:2]
@@ -109,8 +125,8 @@ class PosController_01:
         # And saturate 
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
-        elif (thrust_ref < 0.9*mass*envir.g ):
-            thrust_ref =  0.9*mass*envir.g 
+        elif (thrust_ref < 0.5*mass*envir.g ):
+            thrust_ref =  0.5*mass*envir.g 
         
         return rp_ref, thrust_ref
     
@@ -119,9 +135,9 @@ class PosController_02:
     def __init__(self):
         
           self.dt_ctrl_pos_v = 0.02  # 50 Hz
-          self.pid_vx = pid.PID(4, 0, 0, 20, -20, 0.01)
-          self.pid_vy = pid.PID(4, 0, 0, 20, -20, 0.01)
-          self.pid_vz = pid.PID(5, 0, 0, 20, -20, 0.01)
+          self.pid_vx = pid.PID(4, 0, 0, 9999, -9999, 0.01)
+          self.pid_vy = pid.PID(4, 0, 0, 9999, -9999, 0.01)
+          self.pid_vz = pid.PID(5, 0, 0, 9999, -9999, 0.01)
 
           self.dt_ctrl_pos_p = 0.02  # 50 Hz
           self.pid_x = pid.PID(1, 0, 0, 20, -20, 0.01)
@@ -142,20 +158,32 @@ class PosController_02:
         
         rp_ref = 1/envir.g *R@np.array([T1,T2])
         
-        # and  saturate again 
-        V = 40 * math.pi /180 
+        # And saturate 
+        V = 30 * math.pi /180 
         v_max = np.max(abs(rp_ref))
         if (v_max > V):
             rp_ref = (V/v_max)*rp_ref
         
+        # recalculate to do antiwindup 
+        T12 = np.transpose(R)*envir.g*rp_ref
+        self.pid_vx.u = T12[0]
+        self.pid_vx.antiwindup()
+        self.pid_vy.u = T12[1]
+        self.pid_vy.antiwindup()
+        
         T3 = self.pid_vz.run(ref_ve[2] - meas_ve[2], self.dt_ctrl_pos_v)
         thrust_ref = mass*envir.g + mass*T3 
  
-       # And saturate again
+       # And saturate 
         if ( thrust_ref > self.max_thrust ):
             thrust_ref = self.max_thrust
-        elif (thrust_ref < 0.9*mass*envir.g ):
-            thrust_ref =  0.9*mass*envir.g 
+        elif (thrust_ref < 0.5*mass*envir.g ):
+            thrust_ref =  0.5*mass*envir.g 
+        
+        # recalculate to do anti-windup
+        T3 = (thrust_ref - mass*envir.g)/mass
+        self.pid_vz.u = T3
+        self.pid_vz.antiwindup()
         
         return rp_ref, thrust_ref
     
