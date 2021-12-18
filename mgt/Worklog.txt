@@ -126,3 +126,7 @@ Rolling casuses mainly movement along the y axis, but there is also a component,
 This is beacause, as the plarform changes orientation, the local frame tau_x and tau_z ( I alwyas get a bit of yawing) in th earth frame, i get tau_y also. 
 Same for pitching.
 Now, I do not get symmetrical + and - drifts on the secondary axis, and it seems to be from the inertia product terms. 
+
+18/12/2021
+----------
+Commited UKF working in lecture. have to bring modifications in the main module (?)ss
