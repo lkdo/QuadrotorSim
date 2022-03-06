@@ -126,47 +126,47 @@ args = arg_parser.parse_args()
 
 if args.ref_mode == "step":
       
-      name2 = "step"
-     
-      step_1 = StepAndRampMetaSignal(3,13,20)
-      step_2 = StepAndRampMetaSignal(63,73,-20)
-      pos_x_ref = utils.build_signal_step(0,90,0,step_1, step_2)
+    name2 = "step"
+    
+    step_1 = StepAndRampMetaSignal(3,13,20)
+    step_2 = StepAndRampMetaSignal(63,73,-20)
+    pos_x_ref = utils.build_signal_step(0,90,0,step_1, step_2)
 
-      step_1 = StepAndRampMetaSignal(23,33,20)
-      step_2 = StepAndRampMetaSignal(63,73,-20)
-      pos_y_ref = utils.build_signal_step(0,90,0,step_1, step_2)
+    step_1 = StepAndRampMetaSignal(23,33,20)
+    step_2 = StepAndRampMetaSignal(63,73,-20)
+    pos_y_ref = utils.build_signal_step(0,90,0,step_1, step_2)
 
-      step_1 = StepAndRampMetaSignal(43,53,20)
-      step_2 = StepAndRampMetaSignal(63,73,20)
-      pos_z_ref = utils.build_signal_step(0,90,3,step_1, step_2)
+    step_1 = StepAndRampMetaSignal(43,53,20)
+    step_2 = StepAndRampMetaSignal(63,73,20)
+    pos_z_ref = utils.build_signal_step(0,90,3,step_1, step_2)
 
-      step_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
-      step_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
-      step_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
-      step_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
-      yaw_ref = utils.build_signal_step(0,90,0,step_1, step_2,step_3,step_4)
+    step_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
+    step_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
+    step_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
+    step_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
+    yaw_ref = utils.build_signal_step(0,90,0,step_1, step_2,step_3,step_4)
 
 elif args.ref_mode == "ramp":
     
-      name2 = "ramp"
-      
-      ramp_1 = StepAndRampMetaSignal(3,13,20)
-      ramp_2 = StepAndRampMetaSignal(63,73,-20)
-      pos_x_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
+    name2 = "ramp"
+     
+    ramp_1 = StepAndRampMetaSignal(3,13,20)
+    ramp_2 = StepAndRampMetaSignal(63,73,-20)
+    pos_x_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
 
-      ramp_1 = StepAndRampMetaSignal(23,33,20)
-      ramp_2 = StepAndRampMetaSignal(63,73,-20)
-      pos_y_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
+    ramp_1 = StepAndRampMetaSignal(23,33,20)
+    ramp_2 = StepAndRampMetaSignal(63,73,-20)
+    pos_y_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
 
-      ramp_1 = StepAndRampMetaSignal(43,53,20)
-      ramp_2 = StepAndRampMetaSignal(63,73,20)
-      pos_z_ref = utils.build_signal_ramp(0,90,3,ramp_1, ramp_2)
+    ramp_1 = StepAndRampMetaSignal(43,53,20)
+    ramp_2 = StepAndRampMetaSignal(63,73,20)
+    pos_z_ref = utils.build_signal_ramp(0,90,3,ramp_1, ramp_2)
 
-      ramp_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
-      ramp_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
-      ramp_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
-      ramp_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
-      yaw_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2, ramp_3, ramp_4)
+    ramp_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
+    ramp_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
+    ramp_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
+    ramp_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
+    yaw_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2, ramp_3, ramp_4)
 
 elif args.ref_mode == "sin":
     
@@ -194,15 +194,15 @@ elif args.ref_mode == "sin":
     
 else:
 
-      name2 = "manual"
+    name2 = "manual"
       
 # Simulation parameters
 ##########################################################
-dt_sim = 0.0005  
+dt_sim = 0.005  
 """ integration step """
 dt_log = 0.1
 """ logging step """
-dt_vis = 1/60   
+dt_vis = 1/30
 """ visualization frame step """
 t = 0
 """ time variable """
@@ -218,7 +218,8 @@ plotter = plotter.Plotter()
 
 # Initialize the visualization
 #########################################################
-panda3D_app = pandaapp.Panda3DApp(plus,qrb,ref,3)
+ctrl_mode = 3
+panda3D_app = pandaapp.Panda3DApp(plus,qrb,ref,ctrl_mode)
 readkeys = pandaapp.ReadKeys(ref, 3, panda3D_app)
 
 # The main simulation loop     
@@ -308,6 +309,7 @@ while readkeys.exitpressed is False :
     if abs(t/dt_vis - round(t/dt_vis)) < 0.000001 :
         panda3D_app.taskMgr.step()
         panda3D_app.screenText_pos(qrb.pos,qrb.q,filter.x[:3],utils.rpy2q(filter.x[3:6]))
+        panda3D_app.screenText_ref(np.append(pos_ref,rpy_ref[2]))
         
     # Logging frequency    
     if abs(t/dt_log - round(t/dt_log)) < 0.000001 :

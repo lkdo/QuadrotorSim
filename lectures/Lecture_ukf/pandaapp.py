@@ -283,7 +283,7 @@ class Panda3DApp(ShowBase):
             text = "T={0: 5.3f},R={1: 3.1f},P={2: 3.1f},Y={3: 3.1f}".format(ref[0],
                   ref[1]*180/math.pi,ref[2]*180/math.pi,ref[3]*180/math.pi)
         elif self.ctrl_mode == 3:
-            text = "X={0: 3.1f},Y={1: 3.1f},Z={2: 3.1f},Y={3: 3.1f}".format(ref[0],
+            text = "X={0: 3.1f},Y={1: 3.1f},Z={2: 3.1f},Yaw={3: 3.1f}".format(ref[0],
                   ref[1],ref[2],ref[3]*180/math.pi)
         
         self.textObject_ref.text = text
