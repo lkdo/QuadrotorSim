@@ -335,7 +335,7 @@ class QuadFTau_CF_S:
         return cmd
         
     # Final function (no aerodynamic component, drag is neglected)
-    #####################################################
+    ##############################################################
     
     def input2ftau(self,cmd):
         """ cmd is a 4 vector, each with values from 0 to 65535  """

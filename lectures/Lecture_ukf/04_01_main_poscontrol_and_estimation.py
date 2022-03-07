@@ -30,7 +30,6 @@ import time
 import datetime
 import argparse
 import math 
-from dataclasses import dataclass
 
 # Import local files
 import pandaapp
@@ -42,47 +41,34 @@ import envir
 import controllers
 import utils
 import mems
-import ukf 
+import ukf
+import refs
 
-@dataclass
-class StepAndRampMetaSignal:
-    t_start: float
-    t_end: float 
-    value: float
-
-@dataclass
-class SinMetaSignal:
-    t_start: float
-    amplitude: float
-    no_periods: float 
-    period: float 
-    no_points_per_period: float 
-
-name1 = "PosControl"
+# Main Simulation Parameters
+############################
+dt_gps = 1.0/20.0
+freq_ctrl_rate = 400  # Flight Stab (also IMU freq) 
+freq_ctrl_angle = 0.5*freq_ctrl_rate # Flight Stab
+freq_ctrl_pos_v = 10  # Pos Control
+freq_ctrl_pos_p = 10  # Pos Control
+dt_sim = 1.0/(2*freq_ctrl_rate)  # integration step
+dt_log = 0.1  # logging step
+dt_vis = 1/30 # visualization frame step
+plus = True # Quadrotor configuration, plus or cross 
 
 # Initialization values for the quadrotor
 ##########################################################
-plus = True
-""" Quadrotor configuration, plus or cross """
-pos = np.array([0,0,3])
-""" position vector in meters """
-q = np.array([1,0,0,0])
-""" unit quaternion  representing attitude """
-ve = np.array([0,0,0])
-""" linear velocity vector in the earth-fixed frame """
-omegab = np.array([0,0,0])
-""" angular velocity vector in the body-fixed frame """
-qftau = ftaucf.QuadFTau_CF(0,plus)
-""" Model for the forces and torques of the crazyflie """
+pos = np.array([0,0,3]) # position vector in meters 
+q = np.array([1,0,0,0]) # unit quaternion  representing attitude 
+ve = np.array([0,0,0])  # linear velocity vector in the earth-fixed frame
+omegab = np.array([0,0,0]) # angular velocity vector in the body-fixed frame 
+qftau = ftaucf.QuadFTau_CF(0,plus) # Model for the forces and torques of the crazyflie (used in simulation)
 qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius, 
-                                 qftau.input2omegar_coeff, plus)
-""" Simplified model for the forces and torques """
-qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I)
-""" Rigid body motion object  """
+                                 qftau.input2omegar_coeff, plus) # Simplified model for the forces and torques (used in control)
+qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I) # Rigid body motion object
 
 # Initialize MEMS sensors
 ##########################################################
-
 gyro_x = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 gyro_y = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 gyro_z = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
@@ -91,13 +77,14 @@ gyro_z = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 #acc_y = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
 #acc_z = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
 
-dt_gps = 1.0/20.0
+# Initialize GPS position
+#########################################################
 meas_pos = qrb.pos
 
 # Initialize controller  
 ##########################################################
-att_controller = controllers.AttController_01()
-pos_controller = controllers.PosController_02()
+att_controller = controllers.AttController_01(freq_ctrl_rate, freq_ctrl_angle)
+pos_controller = controllers.PosController_02(freq_ctrl_pos_v, freq_ctrl_pos_p)
 
 omegab_ref = np.zeros(3)
 tau_ref = np.zeros(3)
@@ -117,95 +104,20 @@ kappa = 0
 beta = 2.0
 filter = ukf.ukf(x0,P0,Q,R,alpha,kappa,beta)
 
-# Predefined controller references - for testing 
+# Initialize predefined controller references 
 ##########################################################
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("ref_mode", help=""" Choose between an angle reference
                         template. Values are: step, ramp, sin, manual  """ )
 args = arg_parser.parse_args()
+pos_x_ref, pos_y_ref, pos_z_ref, yaw_ref, name2 = refs.buildCtrlReference(args.ref_mode)
 
-if args.ref_mode == "step":
-      
-    name2 = "step"
-    
-    step_1 = StepAndRampMetaSignal(3,13,20)
-    step_2 = StepAndRampMetaSignal(63,73,-20)
-    pos_x_ref = utils.build_signal_step(0,90,0,step_1, step_2)
-
-    step_1 = StepAndRampMetaSignal(23,33,20)
-    step_2 = StepAndRampMetaSignal(63,73,-20)
-    pos_y_ref = utils.build_signal_step(0,90,0,step_1, step_2)
-
-    step_1 = StepAndRampMetaSignal(43,53,20)
-    step_2 = StepAndRampMetaSignal(63,73,20)
-    pos_z_ref = utils.build_signal_step(0,90,3,step_1, step_2)
-
-    step_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
-    step_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
-    step_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
-    step_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
-    yaw_ref = utils.build_signal_step(0,90,0,step_1, step_2,step_3,step_4)
-
-elif args.ref_mode == "ramp":
-    
-    name2 = "ramp"
-     
-    ramp_1 = StepAndRampMetaSignal(3,13,20)
-    ramp_2 = StepAndRampMetaSignal(63,73,-20)
-    pos_x_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
-
-    ramp_1 = StepAndRampMetaSignal(23,33,20)
-    ramp_2 = StepAndRampMetaSignal(63,73,-20)
-    pos_y_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2)
-
-    ramp_1 = StepAndRampMetaSignal(43,53,20)
-    ramp_2 = StepAndRampMetaSignal(63,73,20)
-    pos_z_ref = utils.build_signal_ramp(0,90,3,ramp_1, ramp_2)
-
-    ramp_1 = StepAndRampMetaSignal(3,13,120*math.pi/180)
-    ramp_2 = StepAndRampMetaSignal(23,33,120*math.pi/180)
-    ramp_3 = StepAndRampMetaSignal(43,53,120*math.pi/180)
-    ramp_4 = StepAndRampMetaSignal(63,73,-120*math.pi/180)
-    yaw_ref = utils.build_signal_ramp(0,90,0,ramp_1, ramp_2, ramp_3, ramp_4)
-
-elif args.ref_mode == "sin":
-    
-    name2 = "sin"
-    
-    f = 1/10
-    
-    sin_1 = SinMetaSignal(3,10,1,1/f,20)
-    sin_2 = SinMetaSignal(63,10,1,1/f,20)
-    pos_x_ref = utils.build_signal_sin(0,27,0,sin_1, sin_2)
-
-    sin_1 = SinMetaSignal(23,10,1,1/f,20)
-    sin_2 = SinMetaSignal(63,10,1,1/f,20)
-    pos_y_ref = utils.build_signal_sin(0,90,0,sin_1, sin_2)
-
-    sin_1 = SinMetaSignal(43,10,1,1/f,20)
-    sin_2 = SinMetaSignal(63,10,1,1/f,20)
-    pos_z_ref = utils.build_signal_sin(0,90,3,sin_1, sin_2)
-    
-    sin_1 = SinMetaSignal(3,60*math.pi/180,1,1/f,20)
-    sin_2 = SinMetaSignal(23,60*math.pi/180,1,1/f,20)
-    sin_3 = SinMetaSignal(43,60*math.pi/180,1,1/f,20)
-    sin_4 = SinMetaSignal(63,60*math.pi/180,1,1/f,20)
-    yaw_ref = utils.build_signal_sin(0,90,0,sin_1, sin_2, sin_3, sin_4)
-    
-else:
-
-    name2 = "manual"
-      
-# Simulation parameters
-##########################################################
-dt_sim = 0.005  
-""" integration step """
-dt_log = 0.1
-""" logging step """
-dt_vis = 1/30
-""" visualization frame step """
-t = 0
-""" time variable """
+# Initialize the visualization
+#########################################################
+ctrl_mode = 3 # Full Position Control
+name1 = "PosControl"
+panda3D_app = pandaapp.Panda3DApp(plus,qrb,ref,ctrl_mode)
+readkeys = pandaapp.ReadKeys(ref,ctrl_mode,panda3D_app)
 
 # Initialize the logger & plotter 
 ##########################################################
@@ -216,11 +128,9 @@ fullname = "logs/" + name
 logger = logger.Logger(fullname, name)
 plotter = plotter.Plotter()
 
-# Initialize the visualization
+# Initialize others
 #########################################################
-ctrl_mode = 3
-panda3D_app = pandaapp.Panda3DApp(plus,qrb,ref,ctrl_mode)
-readkeys = pandaapp.ReadKeys(ref, 3, panda3D_app)
+t = 0
 
 # The main simulation loop     
 #########################################################

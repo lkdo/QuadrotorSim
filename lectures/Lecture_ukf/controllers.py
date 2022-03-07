@@ -33,9 +33,9 @@ import envir
 
 class AttController_01:
     
-    def __init__(self):
+    def __init__(self, freq_ctrl_rate = 500, freq_ctrl_angle = 250): # 500, 250 Hz
     
-        self.dt_ctrl_rate = 0.002  # 500 Hz
+        self.dt_ctrl_rate = 1.0/freq_ctrl_rate
 
         self.pid_rollrate = pid.PID(50, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
         self.pid_pitchrate = pid.PID(50, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
@@ -45,7 +45,7 @@ class AttController_01:
 #        self.pid_pitchrate = pid.PID(10, 0, 0, 8*360*math.pi/180,-8*360*math.pi/180, 0.01)
 #        self.pid_yawrate = pid.PID(5, 0, 0, 8*360*math.pi/180, -8*360*math.pi/180, 0.01)
 
-        self.dt_ctrl_angle = 0.004  # 250 Hz
+        self.dt_ctrl_angle = 1.0/freq_ctrl_angle  
         
         self.pid_pitch = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
         self.pid_roll = pid.PID(10, 0, 0, 2.5*360*math.pi/180, -2.5*360*math.pi/180, 0.01)
@@ -142,9 +142,9 @@ class PosController_01:
     
 class PosController_02:
 
-    def __init__(self):
+    def __init__(self, freq_ctrl_pos_v = 10, freq_ctrl_pos_p = 10 ): 
         
-          self.dt_ctrl_pos_v = 0.1  # 10 Hz
+          self.dt_ctrl_pos_v = 1.0/freq_ctrl_pos_v
           # saturation in the directional  way 
           self.pid_vx = pid.PID(4, 0, 0, 9999, -9999, 0.1)
           self.pid_vy = pid.PID(4, 0, 0, 9999, -9999, 0.1)
@@ -154,7 +154,7 @@ class PosController_02:
 #          self.pid_vy = pid.PID(1, 0, 0, 9999, -9999, 0.1)
 #          self.pid_vz = pid.PID(0.8, 0, 0, 9999, -9999, 0.1)
 
-          self.dt_ctrl_pos_p = 0.1  # 10 Hz
+          self.dt_ctrl_pos_p = 1.0/freq_ctrl_pos_p
           self.pid_x = pid.PID(1, 0, 0, 20, -20, 0.1)
           self.pid_y = pid.PID(1, 0, 0, 20, -20, 0.1)
           self.pid_z = pid.PID(3, 0, 3.5, 10, -10, 0.1)
