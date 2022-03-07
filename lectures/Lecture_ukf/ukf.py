@@ -47,14 +47,6 @@ def create_sigma_points( x, P , L, l ):
     #input("Press Enter to continue...")
     return S
 
-def create_sigma_points_2( x, P, L, alpha, kappa ):
-    sr_P = alpha*sqrtm(kappa*P)
-    S = [x]
-    for i in range(L):
-        S.append(x+sr_P[:,i])
-        S.append(x-sr_P[:,i])
-    return S
-
 ##########################################################    
 
 class ukf:
@@ -91,20 +83,13 @@ class ukf:
         self.W0m = self.l/(self.L+self.l)
         self.W0c = self.W0m+1-self.alpha**2+self.beta
         self.Wi = 0.5/(self.L+self.l)
-
-    
-        # 2
-        #self.W0m = 1 - self.L/(self.alpha**2*self.kappa)
-        #self.W0c = self.W0m+1-self.alpha**2+self.beta
-        #self.Wi = 0.5/(self.alpha**2*self.kappa)
         
         """ sigma points weights """
 
     def run_predict(self,dt,vb,omegab):
 
         S = create_sigma_points(self.x, self.P, self.L, self.l)
-        #S = create_sigma_points_2(self.x, self.P, self.L, self.alpha, self.kappa)
-
+  
         # propagate the points 
         Sp = [ ]
         for i in range(2*self.L+1):
@@ -132,7 +117,6 @@ class ukf:
     def run_meas(self,meas):
 
         S = create_sigma_points(self.x, self.P, self.L, self.l)
-        #S = create_sigma_points_2(self.x, self.P, self.L, self.alpha, self.kappa)
         
         Z = [ ]
         for i in range(2*self.L+1):
