@@ -30,7 +30,7 @@ import numpy as np
 from scipy.linalg import cholesky
 from scipy.linalg import sqrtm
 from math import sqrt
-from rigidbody import quadrotor_dt_euler,quadrotor_meas
+from rigidbody import quadrotor_dt_kinematic_euler
 from scipy.integrate import odeint
 from numpy.linalg import inv
 import utils 
@@ -50,14 +50,15 @@ def create_sigma_points( x, P , L, l ):
 ##########################################################    
 
 class ukf:
-    """ Holds the states and parameters of the mems sensor 
-    ( either a gyroscope or an accelerometer )
-    """
     
-    def __init__(self,x0,P0,Q,R,alpha,kappa,beta):
+    # x = [pos,euler,ve]
+    # can add gyro and acc biases in future for example
+
+    def __init__(self,x0,P0,Q,R,meas_func,alpha,kappa,beta):
     
         self.x = x0
         """ Initial State """
+        self.wrap_state_angles()
 
         self.P = P0
         """ Initial Covariance """
@@ -73,72 +74,74 @@ class ukf:
         self.beta = beta
         """ Sigma points parameters """
 
-        self.L = x0.size
+        self.n = x0.size
         """ State dimensionality """
         
-        self.l = (self.alpha**2)*(self.L+self.kappa) - self.L
+        self.l = (self.alpha**2)*(self.n+self.kappa) - self.n
         """ ct used in the  sigma points """
         
-        # 1
-        self.W0m = self.l/(self.L+self.l)
+        # scaled unscented transform ( try also central differnece maybe)
+        self.W0m = self.l/(self.n+self.l)
         self.W0c = self.W0m+1-self.alpha**2+self.beta
-        self.Wi = 0.5/(self.L+self.l)
-        
+        self.Wi = 0.5/(self.n+self.l)
         """ sigma points weights """
 
-    def run_predict(self,dt,vb,omegab):
+        self.meas_func = meas_func
+##########################################################  
 
-        S = create_sigma_points(self.x, self.P, self.L, self.l)
+    def run_predict(self,dt,ab,omegab):
+
+        S = create_sigma_points(self.x, self.P, self.n, self.l)
   
         # propagate the points 
         Sp = [ ]
-        for i in range(2*self.L+1):
+        for i in range(2*self.n+1):
             
             # ODE Int integration to make the state tranzition
-            #Y = odeint(quadrotor_dt_euler,S[i],np.array([0, dt]),args=(vb,omegab,))
+            #Y = odeint(quadrotor_dt_kinematic_euler,S[i],np.array([0, dt]),args=(ab,omegab,))
             #Sp.append(Y[1]) # Y[0]=x(t=t0)
             
             # Euler faster
-            Sp.append(S[i]+quadrotor_dt_euler(S[i],0,vb,omegab)*dt)
+            Sp.append(S[i]+quadrotor_dt_kinematic_euler(S[i],0,ab,omegab)*dt)
 
         # calculate the mean, covariance and cross-covariance of the set 
         Xm = self.W0m*Sp[0]
-        for i in range(2*self.L):
+        for i in range(2*self.n):
             Xm = Xm + self.Wi*Sp[i+1]
-        Pm = self.W0c*np.outer(Sp[0]-Xm,Sp[0]-Xm)+dt*self.Q
-        for i in range(2*self.L):
-            Pm = Pm + self.Wi*np.outer(Sp[i+1]-Xm,Sp[i+1]-Xm)
+        Cx = self.W0c*np.outer(Sp[0]-Xm,Sp[0]-Xm)+dt*self.Q
+        for i in range(2*self.n):
+            Cx = Cx + self.Wi*np.outer(Sp[i+1]-Xm,Sp[i+1]-Xm)
 
         self.x = Xm
-        self.P = Pm
+        self.P = Cx
 
         self.wrap_state_angles()
 
     def run_meas(self,meas):
 
-        S = create_sigma_points(self.x, self.P, self.L, self.l)
+        S = create_sigma_points(self.x, self.P, self.n, self.l)
         
         Z = [ ]
-        for i in range(2*self.L+1):
-            Z.append(quadrotor_meas(S[i]))
+        for i in range(2*self.n+1):
+            Z.append(self.meas_func(S[i]))
 
         # calculate the mean and covariance of the set 
         Zm = self.W0m*Z[0]
-        for i in range(2*self.L):
+        for i in range(2*self.n):
             Zm = Zm + self.Wi*Z[i+1]
-        Pm = self.W0c*np.outer(Z[0]-Zm,Z[0]-Zm)+self.R
+        Cx = self.W0c*np.outer(Z[0]-Zm,Z[0]-Zm)+self.R
         Csz = self.W0c*np.outer(S[0]-self.x,Z[0]-Zm)
-        for i in range(2*self.L):
-            Pm = Pm + self.Wi*np.outer(Z[i+1]-Zm,Z[i+1]-Zm)
+        for i in range(2*self.n):
+            Cx = Cx + self.Wi*np.outer(Z[i+1]-Zm,Z[i+1]-Zm)
             Csz = Csz + self.Wi*np.outer(S[i+1]-self.x,Z[i+1]-Zm)
 
         # Kalman Gain
-        K = Csz@inv(Pm)
+        K = Csz@inv(Cx)
 
         # Update mean and covarince
-        inn = meas-Zm # if any angles here, I would need to wrap them, but I have none 
+        inn = meas-Zm  # if any angles here, I would need to wrap them, but I have none 
         self.x = self.x + K@inn
-        self.P = self.P - K@Pm@np.transpose(K)
+        self.P = self.P - K@Cx@np.transpose(K)
 
         self.wrap_state_angles()
 
@@ -147,4 +150,3 @@ class ukf:
         self.x[3] = utils.clampRotation(self.x[3])
         self.x[4] = utils.clampRotation(self.x[4])
         self.x[5] = utils.clampRotation(self.x[5])
-    

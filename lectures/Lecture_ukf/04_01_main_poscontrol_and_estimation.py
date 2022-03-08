@@ -51,7 +51,7 @@ freq_ctrl_rate = 400  # Flight Stab (also IMU freq)
 freq_ctrl_angle = 0.5*freq_ctrl_rate # Flight Stab
 freq_ctrl_pos_v = 10  # Pos Control
 freq_ctrl_pos_p = 10  # Pos Control
-dt_sim = 1.0/(2*freq_ctrl_rate)  # integration step
+dt_sim = 1.0/(2*freq_ctrl_rate)  # integration step; has to be bigger than freq_ctrl_rate
 dt_log = 0.1  # logging step
 dt_vis = 1/30 # visualization frame step
 plus = True # Quadrotor configuration, plus or cross 
@@ -61,21 +61,22 @@ plus = True # Quadrotor configuration, plus or cross
 pos = np.array([0,0,3]) # position vector in meters 
 q = np.array([1,0,0,0]) # unit quaternion  representing attitude 
 ve = np.array([0,0,0])  # linear velocity vector in the earth-fixed frame
-omegab = np.array([0,0,0]) # angular velocity vector in the body-fixed frame 
+omegab = np.array([0,0,0]) # angular velocity vector in the body-fixed frame
+ab = np.array([0,0,0]) # linear acceleration in body-fixed frame 
 qftau = ftaucf.QuadFTau_CF(0,plus) # Model for the forces and torques of the crazyflie (used in simulation)
 qftau_s = ftaucf.QuadFTau_CF_S(qftau.cT, qftau.cQ, qftau.radius, 
                                  qftau.input2omegar_coeff, plus) # Simplified model for the forces and torques (used in control)
-qrb = rigidbody.rigidbody(pos, q, ve, omegab, qftau.mass, qftau.I) # Rigid body motion object
+qrb = rigidbody.rigidbody(pos, q, ve, omegab, ab, qftau.mass, qftau.I) # Rigid body motion object
 
-# Initialize MEMS sensors
+# Initialize MEMS sensors 
 ##########################################################
 gyro_x = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 gyro_y = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 gyro_z = mems.mems(0.0035/180.0*math.pi,0.000023/180.0*math.pi,0)
 
-#acc_x = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
-#acc_y = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
-#acc_z = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
+acc_x = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
+acc_y = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
+acc_z = mems.mems(0.140*(10**-3)*9.80665,0.0032*(10**-3)*9.80665,0)
 
 # Initialize GPS position
 #########################################################
@@ -93,16 +94,18 @@ rpy_ref = np.zeros(3)
 pos_ref = np.zeros(3)
 ref = np.array([0.0,0.0,3.0,0.0]) #  x,y,z,yaw
 
-# Initialize UKF
+# Initialize UKF (using Euler Angles)
 ##########################################################
-x0 = np.array([ qrb.pos[0], qrb.pos[1], qrb.pos[2], qrb.rpy[0], qrb.rpy[1], qrb.rpy[2]+math.pi*0.8 ])
-P0 = np.diag([100.0, 100.0, 100.0, 0.01, 0.01, 9.0])
-Q = np.diag([0.01, 0.01, 0.01, 0.001, 0.001, 0.001])
+x0 = np.array([ qrb.pos[0], qrb.pos[1], qrb.pos[2], qrb.rpy[0], qrb.rpy[1], qrb.rpy[2] + np.random.normal(0,40.0/180.0*math.pi),
+                                    0, 0, 0  ]) # x = [pos,euler,ve]
+P0 = np.diag([100.0, 100.0, 100.0, 0.01, 0.01, 9.0, 9.0, 9.0, 9.0])
+Q = np.diag([0.01, 0.01, 0.01, 0.001, 0.001, 0.001, 0.01, 0.01, 0.01])
 R = np.diag([0.002,0.002,0.005])
 alpha = 1*10**(-3)
 kappa = 0
 beta = 2.0
-filter = ukf.ukf(x0,P0,Q,R,alpha,kappa,beta)
+meas_func = lambda x: x[0:3] # we measure only position; omegab and ab are used as inputs for the filter, not states
+filter = ukf.ukf(x0,P0,Q,R,meas_func,alpha,kappa,beta)
 
 # Initialize predefined controller references 
 ##########################################################
@@ -137,21 +140,22 @@ t = 0
 while readkeys.exitpressed is False :
 
     #------------------------------------begin sensors -----------------------------------------------
-    
-    gx = gyro_x.run_mems(dt_sim,qrb.omegab[0])
-    gy = gyro_x.run_mems(dt_sim,qrb.omegab[1])
-    gz = gyro_x.run_mems(dt_sim,qrb.omegab[2])
+    meas_gx = gyro_x.run_mems(dt_sim,qrb.omegab[0])  # gyro running at simulation freq
+    meas_gy = gyro_y.run_mems(dt_sim,qrb.omegab[1])
+    meas_gz = gyro_z.run_mems(dt_sim,qrb.omegab[2])
 
-    if abs(t/dt_gps - round(t/dt_gps)) < 0.000001 :
-        meas_pos_prev =  meas_pos
-        meas_pos = qrb.pos + np.random.normal(0, 2*R[0,0], 3)
-        meas_vel = (meas_pos - meas_pos_prev)/dt_gps
+    meas_ax = acc_x.run_mems(dt_sim,qrb.ab[0])  # acc running at simulation freq
+    meas_ay = acc_y.run_mems(dt_sim,qrb.ab[1])
+    meas_az = acc_z.run_mems(dt_sim,qrb.ab[2])
+    
+    if abs(t/dt_gps - round(t/dt_gps)) < 0.000001 :  
+        meas_pos = qrb.pos + np.random.normal(0, 2*R[0,0], 3) # GNSS sensor, simple noise
         filter.run_meas(meas_pos)
     
     #------------------------------------begin controller --------------------------------------------
     if abs(t/pos_controller.dt_ctrl_pos_p - round(t/pos_controller.dt_ctrl_pos_p)) < 0.000001 :
         
-        #reference
+        # reference
         if ( args.ref_mode == "manual" ):
             pos_ref = readkeys.ref
         else:
@@ -165,19 +169,19 @@ while readkeys.exitpressed is False :
         
     if abs(t/pos_controller.dt_ctrl_pos_v - round(t/pos_controller.dt_ctrl_pos_v)) < 0.000001 :
         
-        # Get Measurement from GPS data 
-        # meas_ve =  qrb.ve + np.random.normal(0, 0.005, 3)
-        meas_yaw = filter.x[5]
+        # use filter estimates 
+        est_yaw = filter.x[5]
+        est_vel = filter.x[6:9]
         
-        rp_ref, thrust_ref = pos_controller.run_vel(ve_ref, meas_vel, meas_yaw, qrb.mass)
+        rp_ref, thrust_ref = pos_controller.run_vel(ve_ref, est_vel, est_yaw, qrb.mass)
         
         rpy_ref[0] = rp_ref[0]
         rpy_ref[1] = rp_ref[1]
         
     if abs(t/att_controller.dt_ctrl_angle - round(t/att_controller.dt_ctrl_angle)) < 0.000001 :
          
-        # Get Measurement
-        meas_rpy = filter.x[3:]
+        # use filter estimates
+        est_rpy = filter.x[3:]
 
         if ( args.ref_mode == "manual" ):
              rpy_ref[2] = readkeys.ref[3]
@@ -185,15 +189,12 @@ while readkeys.exitpressed is False :
              rpy_ref[2] = utils.give_signal(yaw_ref, t)
              
         # controller call 
-        omegab_ref = att_controller.run_angle(rpy_ref, meas_rpy)
+        omegab_ref = att_controller.run_angle(rpy_ref, est_rpy)
         
     if abs(t/att_controller.dt_ctrl_rate - round(t/att_controller.dt_ctrl_rate)) < 0.000001 :
         
-        # Get Measurement (mems gyroscope)
-        meas_omegab = np.array([gx,gy,gz])
-        
         # Controller call 
-        tau_ref = att_controller.run_rate(omegab_ref,meas_omegab,qrb.I)
+        tau_ref = att_controller.run_rate(omegab_ref, np.array([meas_gx,meas_gy,meas_gz]) ,qrb.I)
         
         # Control allocation; use qftau_s model 
         cmd = qftau_s.fztau2cmd(np.array([thrust_ref,tau_ref[0],tau_ref[1],tau_ref[2]]))
@@ -201,7 +202,7 @@ while readkeys.exitpressed is False :
     #------------------------------------------ end controller --------------------------------------
 
     #------------------------------------------ begin filter ----------------------------------------
-    filter.run_predict(dt_sim, qrb.vb, np.array([gx,gy,gz]))
+    filter.run_predict(dt_sim, np.array([meas_ax,meas_ay,meas_az]), np.array([meas_gx,meas_gy,meas_gz]))
     # print(np.diag(filter.P))
 
     #------------------------------------------ begin simulation -------------------------------------   
@@ -209,11 +210,10 @@ while readkeys.exitpressed is False :
     fb, taub = qftau.input2ftau(cmd,qrb.vb)
     
     # Run the kinematic / time forward
-    qrb.run_quadrotor(dt_sim, fb, taub)
+    qrb.run_quadrotor_dynamic_quat(dt_sim, fb, taub)
 
     # Time has increased now
     t = t + dt_sim
-
 
     # Visualization frequency    
     if abs(t/dt_vis - round(t/dt_vis)) < 0.000001 :
