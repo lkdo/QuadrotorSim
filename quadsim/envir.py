@@ -17,30 +17,13 @@
 # along with this package, in a file called LICENSE.
 # If not, see <https://www.gnu.org/licenses/>.
 
-""" Environment module, contains gravity, surface normals, etc """
+""" Module implements the environment, for now only g  
+
+"""
 
 __version__ = "0.1"
 __author__ = "Luminita-Cristiana Totu"
 __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
-import numpy as np
-
-import cts 
-
-def applyenv2ftaue(rb):
-    """ Applies enviornment forces and torques to the object 
-    
-    - applies gravity
-    - Future: applies normals ( colision to ground )
-    - applies dynamic noise / distrurbances 
-    
-    Calculations take place in Earth frame, NWU (north-west-up) 
-    
-    """
-    
-    # Add gravity 
-    fe_e = np.array([0.0,0.0,-rb.mass*cts.g_CONST])
-    taue_e = np.array([0.0,0.0,0.0])
-    
-    return fe_e, taue_e
+g = 9.80665

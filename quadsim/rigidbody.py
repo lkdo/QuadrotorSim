@@ -19,7 +19,6 @@
 
 """ Module implements the rigid body kinematic via the RigidBody classes
 
-To add more text  
 """
 
 __version__ = "0.1"
@@ -28,132 +27,105 @@ __copyright__ = "Copyright (C) 2019 Luminita-Cristiana Totu"
 __license__ = "GNU GPLv3"
 
 import numpy as np
+import envir
+import utils
 import math
+from scipy.integrate import odeint
+from math import sin, cos
 
-import qutils as ut
+def quadrotor_dt_kinematic_euler(X, t, u):
+    # X = [pos,euler,ve]
+    
+    Reb = utils.rpy2rotm(X[3:6])
+    
+    ab = (u[3:]) + Reb.transpose()@np.array([0,0,-envir.g])
+    omegab = u[:3]
+
+    cr = math.cos(X[3])
+    sr = math.sin(X[3])
+    cp = math.cos(X[4])
+    sp = math.sin(X[4])
+    Einv = 1.0/cp*np.array([ [ cp, sr*sp, cr*sp ], [ 0, cr*cp, -sr*cp ], [ 0, sr, cr ] ])
+    
+    d_pos = X[6:9]
+    d_rpy = Einv@omegab
+    d_ve = Reb@ab
+
+    return np.concatenate([ d_pos, d_rpy, d_ve ])
+##########################################################
+
+def quadrotor_dt_kinematic_euler_vb(X, t, u):
+    # X = [pos,euler,vb]
+    
+    Reb = utils.rpy2rotm(X[3:6])
+    
+    ab = (u[3:]) + Reb.transpose()@np.array([0,0,-envir.g])
+    omegab = u[:3]
+    vb = X[6:9]
+
+    cr = math.cos(X[3])
+    sr = math.sin(X[3])
+    cp = math.cos(X[4])
+    sp = math.sin(X[4])
+    Einv = 1.0/cp*np.array([ [ cp, sr*sp, cr*sp ], [ 0, cr*cp, -sr*cp ], [ 0, sr, cr ] ])
+    
+    d_pos = Reb@vb
+    d_rpy = Einv@omegab
+    d_vb = np.transpose(utils.skew(omegab))@vb + ab
+
+    return np.concatenate([ d_pos, d_rpy, d_vb ])
+##########################################################
+
+def quadrotor_dt_dynamic_quat(X, t, mass, I, invI, fb, taub):
+    # Implemented here using quaternions
+    # X = [pos, qeb, ve, omegab]
+
+    q = X[3:7] / np.linalg.norm(X[3:7])  # update and normalize 
+    ve = X[7:10]
+    omegab = X[10:13]
+
+    d_pos = ve
+
+    # q = [ s ] = [ s v1 v2 v3]^T
+    #     [ v ]
+    # dq/dt = 0.5* [      -v^T             ] 
+    #              [  sI3 + skew(v)        ] * omegab
+
+    # version 1, unfolded - fastest, but still lower than rotm    
+    d_q=np.array(
+        [(-q[1]*omegab[0]
+             -q[2]*omegab[1]-q[3]*omegab[2]),
+          (q[0]*omegab[0]
+              -q[3]*omegab[1]+q[2]*omegab[2]),
+          (q[3]*omegab[0]
+              +q[0]*omegab[1]-q[1]*omegab[2]),
+          (-q[2]*omegab[0]
+              +q[1]*omegab[1]+q[0]*omegab[2])
+        ])*0.5
+
+    # dve/dt = 1/m*Rbe*fb + g
+    d_ve = 1/mass*utils.quat2rotm(q)@fb + np.array([0,0,-envir.g ])
+
+    # domegab/dt = I^(-1)*(-skew(omegab)*I*omegabb + taub)
+    d_omegab = (np.dot(
+                   invI, 
+                   np.dot(
+                           -utils.skew(omegab),
+                           np.dot(I,omegab)
+                         )
+                   + taub
+                   ) 
+           )
+
+    return np.concatenate([ d_pos, d_q, d_ve, d_omegab ])
+##########################################################    
 
 class rigidbody:
-    """ Holds the minimum number of states and parameters 
-    to describe a Rigid Body, and implements the kinematics
-    using rotation matrices. 
-    """
-	
-    def __init__(self, pos, rotmb2e, ve, omegab, mass, I):
-        """ Initial values for the rigid body states."""
-        
-        self.pos = pos
-        """ Position vector, float in R3, meters """
-        
-        self.rotmb2e = rotmb2e 
-        """ rotation matrix from body to earth, float in R3x3
-        ve = Rb2e*vb, 
-        where vb - vector in body frame
-        ve - same vector in earth frame
-        """
-        
-        self.ve = ve 
-        """ velocity vector in earth frame, float in R3, m/s """     
-       
-        self.vb =np.transpose(self.rotmb2e)@self.ve
-        """ velocity vector in body frame, float in R3, m/s """     
-       
-        self.omegab = omegab 
-        """angular velocity vector, float in R3, rad/s"""
-        
-        self.mass = mass  
-        """ body mass, in kg """
-        
-        self.I = I
-        """ Inertia Matrix in the body frame 
-        I =  [ Ixx  -Ixy  -Ixz 
-              -Ixy   Iyy  -Iyz
-              -Ixz  -Iyz  Izz  ], 
-        where
-        Ixx, Iyy, Izz - Moments of Inertia around body'sown 3-axes
-             Ixx = Integral_Volume (y*y + z*z) dm 
-             Iyy = Integral_Volume (x*x + z*z) dm 
-             Izz = Integral_Volume (x*x + y*y) dm
-        Ixy, Ixz, Iyz - Products of Inertia
-             Ixy = Integral_Volume (xy) dm 
-             Ixz = Integral_Volume (xz) dm 
-             Iyz = Integral_Volume (yz) dm 
-        """
-        self.invI = np.linalg.inv(self.I) 
-         
-        self.d_pos = np.zeros(3)
-        self.d_rotmb2e = np.zeros([3,3])
-        self.d_ve = np.zeros(3)
-        self.d_omegab = np.zeros(3)
-        
-    def run_quadrotor(self,dt,fb,taub):
-        """ Dynamic/Differential equations for rigid body motion/flight """
-    
-        # dpos/dt = Ve
-        self.d_pos = self.ve  
-    
-        # drotmb2e/dt = rotmb2e*skew(omegab)
-        self.d_rotmb2e = np.dot(self.rotmb2e,ut.skew(self.omegab)) 
-    
-        # dve/dt = 1/m*Rbe*fb
-        self.d_ve = 1/self.mass*self.rotmb2e@fb 
-    
-        # domegab/dt = I^(-1)*(-skew(omegab)*I*omegab + taub)
-        self.d_omegab = ( np.dot(
-                            self.invI, 
-                            np.dot(
-                                   -ut.skew(self.omegab), 
-                                   np.dot(self.I,self.omegab)
-                                   )
-                            + taub 
-                            ) 
-                   )
-    
-        ## Integrate for over dt
-    
-        # Simple Euler, the step dt must be small
-        X = np.concatenate([self.pos, self.rotmb2e.reshape(-1), self.ve, 
-                            self.omegab])
-        dX = np.concatenate([ self.d_pos, self.d_rotmb2e.reshape(-1), 
-                                                                   self.d_ve, self.d_omegab ])
-        X = X + dt*dX
-  
-        # unpack the vector state
-        self.pos = X[1-1:3]
-        self.rotmb2e = X[4-1:12].reshape(3,3)
-        self.ve = X[13-1:15]
-        self.vb =np.transpose(self.rotmb2e)@self.ve
-        self.omegab = X[16-1:18]
-        
-        
-    def euler_xyz(self):
-        """ Returns the 1-2-3/x-y-z Euler angles 
-         
-        These are equivalent to a rotation from the  earth-frame 
-        to the body frame. 
-        
-        The same matrix expressed coordinates from body frame 
-        to the earth frame.
-        """
-        return ut.rotm2exyz(self.rotmb2e)
-   	
-    def check(self):
-        if ( abs(np.linalg.det(self.rotmb2e)-1)>0.001 or 
-             np.linalg.norm(np.linalg.inv(self.rotmb2e) 
-                            -np.transpose(self.rotmb2e)) >0.001 ) :
-            print("Warning: determinant of rotation matrix is %f\n" % 
-                  (np.linalg.det(self.rotmb2e)) 
-                 )
-            print("Warning: norm(inv(R)-R^T) is %f \n" % 
-                  (np.linalg.det(self.rotmb2e)) 
-                 )
-            
-class rigidbody_q:
-    """ Holds the minimum number of states and parameters 
-    to describe a Rigid Body, and implements the kinematics
-    using quaternions.
+    """ Holds the states and parameters to describe a Rigid Body, 
+    and implements the kinematics  using quaternions
     """
     
-    def __init__(self,pos,q,ve,omegab,mass,I):
+    def __init__(self,pos,q,ve,omegab,ab,mass,I):
     
         self.pos = pos   
         """ Position vector, float in R3, meters """
@@ -161,19 +133,22 @@ class rigidbody_q:
         self.q = q
         """ quaternion, in the form [ scalar vector3 ]   """
         
-        self.rotmb2e = ut.quat2rotm(q)
+        self.rotmb2e = utils.quat2rotm(q)
         """ the rotation matrix """
         
-        self.rpy = ut.rotm2exyz(ut.quat2rotm(self.q),1) 
+        self.rpy = utils.rotm2rpy(utils.quat2rotm(self.q),1) 
         
         self.ve = ve 
         """ velocity vector in earth frame, float in R3, m/s """     
        
-        self.vb =np.transpose(self.rotmb2e)@self.ve
+        self.vb = np.transpose(self.rotmb2e)@self.ve
         """ velocity vector in body frame, float in R3, m/s """     
        
         self.omegab = omegab 
-        """angular velocity vector, float in R3, rad/s"""
+        """ angular velocity vector, float in R3, rad/s"""
+        
+        self.abmg = ab
+        """ body frame acceleration """
         
         self.mass = mass  
         """ body mass, in kg """
@@ -200,75 +175,81 @@ class rigidbody_q:
         self.d_ve = np.zeros(3)
         self.d_omegab = np.zeros(3)
         
-    def run_quadrotor(self,dt,fb,taub):
+    def run_quadrotor_dynamic_quat(self,dt,fb,taub):
         """ Dynamic/Differential equations for rigid body motion/flight """
     
-        # dpos/dt = ve 
-        self.d_pos = self.ve
-    
-        # q = [ s ] = [ s v1 v2 v3]^T
-        #     [ v ]
-        # dq/dt = 0.5*[      -v        ] * omegab
-        #             [  sI3 + skew(v) ] 
-        
-        # version 1, unfolded - fastest, but still lower than rotm
-        self.d_q=np.array(
-            [(-self.q[1]*self.omegab[0]
-                 -self.q[2]*self.omegab[1]-self.q[3]*self.omegab[2]),
-              (self.q[0]*self.omegab[0]
-                  -self.q[3]*self.omegab[1]+self.q[2]*self.omegab[2]),
-              (self.q[3]*self.omegab[0]
-                  +self.q[0]*self.omegab[1]-self.q[1]*self.omegab[2]),
-              (-self.q[2]*self.omegab[0]
-                  +self.q[1]*self.omegab[1]+self.q[0]*self.omegab[2])
-            ])*0.5
-        
-        # version 2, more compact but slower than version 1
-        #d_q = 0.5*np.dot(np.block([[dq1],[dq2]]),self.omegab)
-        #d_q = 0.5*np.dot(
-        #        np.block([[-self.q[1:3+1]],
-        #                  [self.q[0]*np.identity(3)+ut.skew(self.q[1:3+1])]]),
-        #        self.omegab
-        #                )
-        
-        # dve/dt = 1/m*Rbe*fb
-        self.d_ve = 1/self.mass*ut.quat2rotm(self.q)@fb 
-    
-        # domegab/dt = I^(-1)*(-skew(omegab)*I*omegabb + taub)
-        self.d_omegab = (np.dot(
-                       self.invI, 
-                       np.dot(
-                               -ut.skew(self.omegab),
-                               np.dot(self.I,self.omegab)
-                             )
-                       + taub
-                       ) 
-               )
-    
-        ## Integrate for over dt
-    
-        # Simple Euler, the step dt must be small
+        # ODE Integration
         X = np.concatenate([self.pos, self.q, self.ve, self.omegab])
-        dX = np.concatenate([ self.d_pos, self.d_q, self.d_ve, self.d_omegab ])
-        X = X + dt*dX
-  
+        Y = odeint(quadrotor_dt_dynamic_quat,X,np.array([0, dt]),args=(self.mass,self.I,self.invI,fb,taub,))
+        Y = Y[1] # Y[0] = X(t=t0) 
+
         # unpack the vector state
-        self.pos = X[1-1:3]
-        self.q = X[4-1:7] / np.linalg.norm(X[4-1:7])
-        self.rotmb2e = ut.quat2rotm(self.q)
-        self.rpy = ut.rotm2exyz(ut.quat2rotm(self.q),1)
-        self.ve = X[8-1:10]
-        self.vb =np.transpose(self.rotmb2e)@self.ve
-        self.omegab = X[11-1:13]
+        self.pos = Y[1-1:3]
+        self.q = Y[4-1:7] / np.linalg.norm(Y[4-1:7])  # update and normalize 
+        self.rotmb2e = utils.quat2rotm(self.q)
+        self.rpy = utils.rotm2rpy(self.rotmb2e)
+        self.ve = Y[8-1:10]
+        self.vb = np.transpose(self.rotmb2e)@self.ve
+        self.omegab = Y[11-1:13]
         
-    def euler_xyz(self):
-        """ Returns the 1-2-3/x-y-z Euler angles for E2B """
-        return self.rpy  
-    
-    def check(self):
-        if abs(np.linalg.norm(self.q)-1)>0.001:
-            print("Warning: norm of quaternions is %f. \n" % 
-                  (np.linalg.norm(self.q)) 
-                 )
-            
-            
+        # Get the acceleration, need it for accelerometer sensors
+        dvemg = quadrotor_dt_dynamic_quat(Y, 0, self.mass, self.I, self.invI, fb, taub)[7:10] - np.array([0,0,-envir.g])  # minus gravity 
+        self.abmg = np.transpose(self.rotmb2e)@(dvemg)
+##########################################################       
+
+def quadrotor_dt_kinematic_euler_vb_dFXdX(X,u):
+
+    # X = [pos, euler, vb ]
+    # H = [pos, vb ]
+  
+    # util exprs
+    roll = X[3];  pitch = X[4]; yaw = X[5]
+    vbx = X[6]; vby = X[7];  vbz = X[8]
+    ox = u[0]; oy = u[1]; oz = X[2]
+
+    sr = sin(roll)
+    cr = cos(roll)
+    sp = sin(pitch)
+    cp = cos(pitch)
+    sy = sin(yaw)
+    cy = cos(yaw)
+    cpi = 1.0/cp
+    tp = sp/cp
+ 
+    # From symbolic
+    return np.array([
+[0 , 0 , 0 , vby*(sp*cr*cy + sr*sy) + vbz*(-sp*sr*cy + sy*cr) , -vbx*sp*cy + vby*sr*cp*cy + vbz*cp*cr*cy , -vbx*sy*cp + vby*(-sp*sr*sy - cr*cy) + vbz*(-sp*sy*cr + sr*cy) , cp*cy , sp*sr*cy - sy*cr , sp*cr*cy + sr*sy], 
+[0 , 0 , 0 , vby*(sp*sy*cr - sr*cy) + vbz*(-sp*sr*sy - cr*cy) , -vbx*sp*sy + vby*sr*sy*cp + vbz*sy*cp*cr , vbx*cp*cy + vby*(sp*sr*cy - sy*cr) + vbz*(sp*cr*cy + sr*sy) , sy*cp , sp*sr*sy + cr*cy , sp*sy*cr - sr*cy], 
+[0 , 0 , 0 , vby*cp*cr - vbz*sr*cp , -vbx*cp - vby*sp*sr - vbz*sp*cr , 0 , -sp , sr*cp , cp*cr ],
+[0 , 0 , 0 , oy*tp*cr - oz*tp*sr , oy*sr*tp**2 + oy*sr + oz*cr*tp**2 + oz*cr , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , -oy*sr - oz*cr , 0 , 0 , 0 , 0 , 0 ],
+[0 , 0 , 0 , oy*cr*cpi - oz*sr*cpi , oy*tp*sr*cpi + oz*tp*cr*cpi , 0 , 0 , 0 , 0], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , oz , -oy ], 
+[0 , 0 , 0 , 0 , 0 , 0 , -oz , 0 , ox ],
+[0 , 0 , 0 , 0 , 0 , 0 , oy , -ox , 0 ]
+        ])
+
+def quadrotor_dt_kinematic_euler_vb_meas_pos(X):
+    # X = [pos, euler, vb ]
+    # H = [pos]
+    H1 = X[0:3]
+    return H1
+
+def quadrotor_dt_kinematic_euler_vb_meas_pos_dHXdX(X):
+    return np.array([
+      [1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+      [0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], 
+      [0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 ] ])
+
+def quadrotor_dt_kinematic_euler_vb_meas_vb(X):
+    # X = [pos, euler, vb, ob, ae]
+    # H = [vb]
+    H2 = X[6:9]
+    return H2
+
+def quadrotor_dt_kinematic_euler_vb_meas_vb_dHXdX(X):
+    return np.array([
+[0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0],
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1] 
+ ])

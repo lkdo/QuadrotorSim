@@ -39,14 +39,87 @@ class Plotter:
         
         fig.set_size_inches(20, 15)
         fig.set_dpi(100)
-        fig.subplots_adjust(hspace=0.25)
+        fig.subplots_adjust(hspace=0.5)
         for ax in ax_lst:
             ax.tick_params(axis='both', which='major', labelsize=20)
             ax.tick_params(axis='both', which='minor', labelsize=10)
             for item in [ax.title, ax.xaxis.label, ax.yaxis.label]:
                      item.set_fontsize(self.big_font_size)
             ax.grid(True)    
+
+    def plot_mems(self, log):
+
+        # saving location 
+        location = log.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
         
+        # Gyro Bias plot
+        ################################################
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('MEMS Gyro Bias', fontsize = self.big_font_size)
+        time = np.asarray(log.rb_time)
+        gyro_bias = np.asarray(log.gyro_bias)
+        time_filter = np.asarray(log.filter_time)
+        gyro_bias_filter = np.asarray(log.filter_bg)
+        
+        ax_lst[0].plot( time, gyro_bias[:,0], marker = "o", label = 'true' )
+        ax_lst[0].plot( time_filter, gyro_bias_filter[:,0], marker = "x", label='filter' )
+        ax_lst[0].set_title("X-axis")
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Ang Velocity [rad/s]')
+        ax_lst[0].legend(loc="upper left")
+        
+        ax_lst[1].plot( time, gyro_bias[:,1], marker = "o", label = 'true' )
+        ax_lst[1].plot( time_filter, gyro_bias_filter[:,1], marker = "x", label = 'filter' )
+        ax_lst[1].set_title("X-axis")
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Ang Velocity [rad/s]')
+        ax_lst[1].legend(loc="upper left")
+
+        ax_lst[2].plot( time, gyro_bias[:,2], marker = "o", label='true')
+        ax_lst[2].plot( time_filter, gyro_bias_filter[:,2], marker = "x", label = 'filter' )
+        ax_lst[2].set_title("X-axis")
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Ang Velocity [rad/s]')
+        ax_lst[2].legend(loc="upper left")
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__mems_gyro_bias.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+
+        # Acc Bias plot
+        ################################################
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('MEMS Acc Bias', fontsize = self.big_font_size)
+        time = np.asarray(log.rb_time)
+        acc_bias = np.asarray(log.acc_bias)
+        time_filter = np.asarray(log.filter_time)
+        acc_bias_filter = np.asarray(log.filter_ba)
+        
+        ax_lst[0].plot( time, acc_bias[:,0], marker = "o", label = 'true' )
+        ax_lst[0].plot( time_filter, acc_bias_filter[:,0], marker = "x", label='filter' )
+        ax_lst[0].set_title("X-axis")
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Acc [m/s2]')
+        ax_lst[0].legend(loc="upper left")
+
+        ax_lst[1].plot( time, acc_bias[:,1], marker = "o", label='true' )
+        ax_lst[1].plot( time_filter, acc_bias_filter[:,1], marker = "x", label='filter' )
+        ax_lst[1].set_title("X-axis")
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Acc [m/s2]')
+        ax_lst[1].legend(loc="upper left")
+
+
+        ax_lst[2].plot( time, acc_bias[:,2], marker = "o", label='true')
+        ax_lst[2].plot( time_filter, acc_bias_filter[:,2], marker = "x", label='filter' )
+        ax_lst[2].set_title("X-axis")
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Acc [m/s2]')
+        ax_lst[2].legend(loc="upper left")
+
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__mems_acc_bias.png"
+        fig.savefig(fullname)
+        plt.close(fig)
+
     def plot_rigidbody(self, log):
         
         # saving location 
@@ -60,13 +133,21 @@ class Plotter:
         fig.suptitle('Rigid Body Position', fontsize = self.big_font_size)
         time = np.asarray(log.rb_time)
         pos = np.asarray(log.rb_pos)
+        time_filter = np.asarray(log.filter_time)
+        pos_filter = np.asarray(log.filter_pos)
         
         ax_lst[0].plot( time, pos[:,0], marker = "o" )
+        ax_lst[0].plot( time, pos_filter[:,0], marker = "x" )
         ax_lst[0].set_title("X-axis")
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel('Distance [m]')
         ax_lst[1].plot( time, pos[:,1], marker = "o" )
+        ax_lst[1].plot( time_filter, pos_filter[:,1], marker = "x" )
         ax_lst[1].set_title("Y-axis")
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel('Distance [m]')
         ax_lst[2].plot( time, pos[:,2], marker = "o" ) 
+        ax_lst[2].plot( time_filter, pos_filter[:,2], marker = "x" ) 
         ax_lst[2].set_title("Z-axis")
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel('Distance [m]')
         
         self.fig_style_1(fig, ax_lst)
         
@@ -80,13 +161,24 @@ class Plotter:
         fig.suptitle('Rigid Body Euler-XYZ', fontsize = self.big_font_size)
         time = np.asarray(log.rb_time)
         euler = np.asarray(log.rb_euler)
+        time_filter = np.asarray(log.filter_time)
+        euler_filter = np.asarray(log.filter_euler)
         
-        ax_lst[0].plot( time, euler[:,0], marker = "o" )
+        ax_lst[0].plot( time, euler[:,0], marker = "o", label='true' )
+        ax_lst[0].plot( time_filter, euler_filter[:,0], marker = "x", label='filter' )
+        ax_lst[0].legend(loc="upper left")
         ax_lst[0].set_title("Roll - rotation around the X-axis")
-        ax_lst[1].plot( time, euler[:,1], marker = "o" )
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel('Angles [$^\circ$]')
+        ax_lst[1].plot( time, euler[:,1], marker = "o", label='true' )
+        ax_lst[1].plot( time_filter, euler_filter[:,1], marker = "x", label='filter' )
+        ax_lst[1].legend(loc="upper left")
         ax_lst[1].set_title("Pitch - rotation around the Y-axis")
-        ax_lst[2].plot( time, euler[:,2], marker = "o" ) 
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel('Angles [$^\circ$]')
+        ax_lst[2].plot( time, euler[:,2], marker = "o", label='true' ) 
+        ax_lst[2].plot( time_filter, euler_filter[:,2], marker = "x", label='filter' ) 
+        ax_lst[2].legend(loc="upper left")
         ax_lst[2].set_title("Yaw - rotation around the Z-axis")
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel('Angles [$^\circ$]')
         
         self.fig_style_1(fig, ax_lst)
         
@@ -109,12 +201,19 @@ class Plotter:
         
         ax_lst[0].plot( time, cmd_rotors[:,0], marker = "o" )
         ax_lst[0].set_title("Rotor 1")
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel('16-bit number')
+        
         ax_lst[1].plot( time, cmd_rotors[:,1], marker = "o" )
         ax_lst[1].set_title("Rotor 2")
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel('16-bit number')
+        
         ax_lst[2].plot( time, cmd_rotors[:,2], marker = "o" ) 
         ax_lst[2].set_title("Rotor 3")
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel('16-bit number')
+        
         ax_lst[3].plot( time, cmd_rotors[:,3], marker = "o" ) 
         ax_lst[3].set_title("Rotor 4")
+        ax_lst[3].set_xlabel('Time [s]');ax_lst[3].set_ylabel('16-bit number')
         
         self.fig_style_1(fig, ax_lst)
         
@@ -140,20 +239,23 @@ class Plotter:
         ax_lst[0].plot( time, angle[:,0] )
         ax_lst[0].set_title("Roll")
         ax_lst[0].legend(("Roll Ref","Roll"))
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel('Angles [$^\circ$]')
         
         ax_lst[1].plot( time, angle_ref[:,1] )
         ax_lst[1].plot( time, angle[:,1])
         ax_lst[1].set_title("Pitch")
         ax_lst[1].legend(("Pitch Ref","Pitch"))
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel('Angles [$^\circ$]')
         
         ax_lst[2].plot( time, angle_ref[:,2])
         ax_lst[2].plot( time, angle[:,2])
         ax_lst[2].set_title("Yaw")
         ax_lst[2].legend(("Yaw Ref","Yaw"))
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel('Angles [$^\circ$]')
         
         self.fig_style_1(fig, ax_lst)
         
-        fullname = location + "/" +  log.basename + "__angle_ref.png"
+        fullname = location + "/" +  log.basename + "__attstab_angle_ref.png"
         fig.savefig(fullname)
         plt.close(fig)
         
@@ -168,48 +270,91 @@ class Plotter:
         ax_lst[0].plot( time, omega[:,0])
         ax_lst[0].set_title("Omega X")
         ax_lst[0].legend(("Omega X Ref","Omega X"))
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Ang. Vel [$^\circ$/s]')
         
         ax_lst[1].plot( time, omega_ref[:,1] )
         ax_lst[1].plot( time, omega[:,1] )
         ax_lst[1].set_title("Omega Y")
         ax_lst[1].legend(("Omega Y Ref","Omega Y"))
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Ang. Vel [$^\circ$/s]')
         
         ax_lst[2].plot( time, omega_ref[:,2])
         ax_lst[2].plot( time, omega[:,2] )
-        ax_lst[2].set_title("Omega Z Rate")
+        ax_lst[2].set_title("Omega Z")
         ax_lst[2].legend(("Omega Z Ref","Omega Z"))
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Ang. Vel [$^\circ$/s]')
         
         self.fig_style_1(fig, ax_lst)
         
-        fullname = location + "/" +  log.basename + "__omega_ref.png"
+        fullname = location + "/" +  log.basename + "__attstab_omega_ref.png"
         fig.savefig(fullname)
         plt.close(fig)
         
-        # alpha ref 
+        # tau ref 
+        
         fig, ax_lst = plt.subplots(3, 1)
-        fig.suptitle('Alpha Ref vs Alpha ', fontsize = self.big_font_size)
+        fig.suptitle('Tau Ref vs Tau (body frame)', fontsize = self.big_font_size)
         time = np.asarray(log.attstab_time)
-        alpha_ref = np.asarray(log.attstab_alpha_ref)
-        alpha = np.asarray(log.rb_alphab)
+        tau_ref = np.asarray(log.attstab_tau_ref)
+        tau = np.asarray(log.ftau_taub)
         
-        ax_lst[0].plot( time, alpha_ref[:,0])
-        ax_lst[0].plot( time, alpha[:,0])
-        ax_lst[0].set_title("Alpha X")
-        ax_lst[0].legend(("Alpha X Ref","Alpha X"))
+        ax_lst[0].plot( time, tau_ref[:,0])
+        ax_lst[0].plot( time, tau[:,0])
+        ax_lst[0].set_title("Tau X")
+        ax_lst[0].legend(("Tau X Ref","Tau X"))
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Torque [N$\cdot$m]')
         
-        ax_lst[1].plot( time, alpha_ref[:,1])
-        ax_lst[1].plot( time, alpha[:,1])
-        ax_lst[1].set_title("Alpha Y")
-        ax_lst[1].legend(("Alpha Y Ref","Alpha Y"))
+        ax_lst[1].plot( time, tau_ref[:,1])
+        ax_lst[1].plot( time, tau[:,1])
+        ax_lst[1].set_title("Tau Y")
+        ax_lst[1].legend(("Tau Y Ref","Tau Y"))
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Torque [N$\cdot$m]')
         
-        ax_lst[2].plot( time, alpha_ref[:,2])
-        ax_lst[2].plot( time, alpha[:,2])
-        ax_lst[2].set_title("Alpha Z")
-        ax_lst[2].legend(("Alpha Z Ref","Alpha Z"))
+        ax_lst[2].plot( time, tau_ref[:,2])
+        ax_lst[2].plot( time, tau[:,2])
+        ax_lst[2].set_title("Tau Z")
+        ax_lst[2].legend(("Tau Z Ref","Tau Z"))
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Torque [N$\cdot$m]')
         
         self.fig_style_1(fig, ax_lst)
         
-        fullname = location + "/" +  log.basename + "__alpha_ref.png"
+        fullname = location + "/" +  log.basename + "__attstab_tau_ref.png"
         fig.savefig(fullname)
         plt.close(fig)
-                
+    
+    def plot_posctrl(self, log):
+        
+         # saving location 
+        location = log.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+            
+        fig, ax_lst = plt.subplots(3, 1)
+        fig.suptitle('Pos Ref vs Pos', fontsize = self.big_font_size)
+        time = np.asarray(log.posctrl_time)
+        pos_ref = np.asarray(log.posctrl_pos_ref)
+        pos = np.asarray(log.rb_pos)
+        
+        ax_lst[0].plot( time, pos_ref[:,0])
+        ax_lst[0].plot( time, pos[:,0])
+        ax_lst[0].set_title(" X")
+        ax_lst[0].legend((" X Ref"," X"))
+        ax_lst[0].set_xlabel('Time [s]');ax_lst[0].set_ylabel(' Distance [m]')
+        
+        ax_lst[1].plot( time, pos_ref[:,1])
+        ax_lst[1].plot( time, pos[:,1])
+        ax_lst[1].set_title("Y")
+        ax_lst[1].legend(("Y Ref","Y"))
+        ax_lst[1].set_xlabel('Time [s]');ax_lst[1].set_ylabel(' Distance [m]')
+        
+        ax_lst[2].plot( time, pos_ref[:,2])
+        ax_lst[2].plot( time, pos[:,2])
+        ax_lst[2].set_title("Z")
+        ax_lst[2].legend(("Z Ref","Z"))
+        ax_lst[2].set_xlabel('Time [s]');ax_lst[2].set_ylabel(' Distance [m]')
+        
+        self.fig_style_1(fig, ax_lst)
+        
+        fullname = location + "/" +  log.basename + "__posctrl_pos_ref.png"
+        fig.savefig(fullname)
+        plt.close(fig)

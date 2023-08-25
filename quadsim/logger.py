@@ -56,20 +56,39 @@ class Logger:
         self.attstab_time = []
         self.attstab_angle_ref = []
         self.attstab_omega_ref = []
-        self.attstab_alpha_ref = []
+        self.attstab_tau_ref = []
         
+        self.posctrl_time = []
+        self.posctrl_pos_ref = []
+        
+        self.mems_time = []
+        self.acc_bias = []
+        self.gyro_bias = []
+        
+        self.filter_time = []
+        self.filter_pos = []
+        self.filter_euler = []
+        self.filter_vb = []
+        self.filter_ve = []
+        self.filter_vel = []
+        self.filter_omegab = []
+        self.filter_ab = []
+        self.filter_ae = []
+        self.filter_ba = []
+        self.filter_bg = []
+
     # rigid body elements 
     ###################################################
     
-    def log_rigidbody(self, t, rb):
+    def log_rigidbody(self, t, rb):     
         
         self.rb_time.append(t)
         self.rb_pos.append(rb.pos)
         self.rb_vb.append(rb.vb)  
-        self.rb_euler.append(180/math.pi*rb.euler_xyz())
+        self.rb_euler.append(180/math.pi*rb.rpy)
         self.rb_ve.append(rb.ve)
-        self.rb_omegab.append(rb.omegab)
-        self.rb_alphab.append(rb.d_omegab)
+        self.rb_omegab.append(180/math.pi*rb.omegab)
+        self.rb_alphab.append(180/math.pi*rb.d_omegab)
      
     def log2file_rigidbody(self):
         
@@ -80,7 +99,7 @@ class Logger:
         with open(fullname,"w") as f:
             f.write("time position ve vb euler_xyz omegab alphab \n")
             for i in range(len(self.rb_time)):
-                c1 = np.array2string(self.rb_time[i], precision = 8, 
+                c1 = np.array2string(np.array([self.rb_time[i]]), precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c2 = np.array2string(self.rb_pos[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
@@ -116,11 +135,10 @@ class Logger:
         with open(fullname,"w") as f:
             f.write("time cmd_rotors \n")
             for i in range(len(self.cmd_time)):
-                c1 = np.array2string(self.cmd_time[i], precision = 8, 
+                c1 = np.array2string(np.array([self.cmd_time[i]]), precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c2 = np.array2string(self.cmd_rotors[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                
                 fullline = c1+"  "+c2+"\n"
                 fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)
@@ -145,7 +163,7 @@ class Logger:
         with open(fullname,"w") as f:
             f.write("time fe taue fb taub \n")
             for i in range(len(self.ftau_time)):
-                c1 = np.array2string(self.ftau_time[i], precision = 8, 
+                c1 = np.array2string(np.array([self.ftau_time[i]]), precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c2 = np.array2string(self.ftau_fe[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
@@ -159,17 +177,17 @@ class Logger:
                 fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
                 fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)
-                
-    # PID attitude stabilizator
-    ####################################################                
     
-    def log_attstab(self, t,angle_ref,omega_ref,alpha_ref):
+    # controller 
+    ########################################
+
+    def log_attstab(self,t,angle_ref,omega_ref,tau_ref):
        
         self.attstab_time.append(t)
-        self.attstab_angle_ref.append(angle_ref)
-        self.attstab_omega_ref.append(omega_ref)
-        self.attstab_alpha_ref.append(alpha_ref)
-        
+        self.attstab_angle_ref.append(180/math.pi*angle_ref)
+        self.attstab_omega_ref.append(180/math.pi*omega_ref)
+        self.attstab_tau_ref.append(tau_ref)
+              
     def log2file_attstab(self):
         
         location = self.location 
@@ -178,17 +196,121 @@ class Logger:
             
         fullname = location + "/" +  self.basename + "__attstab.txt"
         with open(fullname,"w") as f:
-            f.write("time angle_ref  omega_ref alpha_ref \n")
+            f.write("time angle_ref  omega_ref alpha_ref tau_ref \n")
             for i in range(len(self.attstab_time)):
-                c1 = np.array2string(self.attstab_time[i], precision = 8, 
+                c1 = np.array2string(np.array([self.attstab_time[i]]), precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c2 = np.array2string(self.attstab_angle_ref[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
                 c3 = np.array2string(self.attstab_omega_ref[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                c4 = np.array2string(self.attstab_alpha_ref[i], precision = 8, 
+                c4 = np.array2string(self.attstab_tau_ref[i], precision = 8, 
                         suppress_small=False, sign=" ",floatmode ="fixed")
-                
-                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+"\n"
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"\n"
                 fullline = str(fullline).replace('[','').replace(']','')
                 f.write(fullline)
+                
+    def log_posctrl(self,t,pos_ref):
+        self.posctrl_time.append(t)
+        self.posctrl_pos_ref.append(pos_ref)
+        
+    def log2file_posctrl(self):
+        
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+            
+        fullname = location + "/" +  self.basename + "__posctrl.txt"
+        with open(fullname,"w") as f:
+            f.write("time pos_ref \n")
+            for i in range(len(self.posctrl_time)):
+                c1 = np.array2string(np.array([self.posctrl_time[i]]), precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.posctrl_pos_ref[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                fullline = c1+"  "+c2+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
+                f.write(fullline)
+        
+    # filter 
+    ########################################
+
+    def log_filter(self, t, state):
+        
+        self.filter_time.append(t)
+        self.filter_pos.append(state[0:3])
+        self.filter_euler.append(180/math.pi*state[3:6])
+        self.filter_vel.append(state[6:9]) # either ve or vb 
+        self.filter_ba.append([0,0,0])
+        self.filter_bg.append([0,0,0])
+
+    def log2file_filter(self):
+        
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+            
+        fullname = location + "/" +  self.basename + "__posctrl.txt"
+        with open(fullname,"w") as f:
+            f.write("time pos_ref \n")
+            for i in range(len(self.filter_time)):
+                c1 = np.array2string(np.array([self.filter_time[i]]), precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.filter_pos[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c3 = np.array2string(self.filter_euler[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c4 = np.array2string(self.filter_pos[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c5 = np.array2string(self.filter_vel[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
+                f.write(fullline)
+
+    def log_filter_ros(self, t, state):
+        
+        self.filter_time.append(t)
+        self.filter_pos.append(state[0:3])
+        self.filter_euler.append(180/math.pi*state[3:6])
+        self.filter_vb.append(state[6:9])
+        self.filter_omegab.append(state[9:12])
+        self.filter_ae.append(state[12:15])
+        self.filter_ba.append([0,0,0])
+        self.filter_bg.append([0,0,0])
+
+    def log2file_filter_ros(self):
+        
+        location = self.location 
+        if not os.path.exists(location):
+            os.makedirs(location)
+            
+        fullname = location + "/" +  self.basename + "__posctrl.txt"
+        with open(fullname,"w") as f:
+            f.write("time pos_ref \n")
+            for i in range(len(self.filter_time)):
+                c1 = np.array2string(np.array([self.filter_time[i]]), precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c2 = np.array2string(self.filter_pos[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c3 = np.array2string(self.filter_euler[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c4 = np.array2string(self.filter_pos[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c5 = np.array2string(self.filter_vb[i], precision = 8, 
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                c6 = np.array2string(self.filter_omegab[i], precision = 8, 
+                       suppress_small=False, sign=" ",floatmode ="fixed")
+                c7 = np.array2string(self.filter_ae[i], precision = 8,
+                        suppress_small=False, sign=" ",floatmode ="fixed")
+                fullline = c1+"  "+c2+"  "+c3+"  "+c4+"  "+c5+"  "+c6+"  "+c7+"\n"
+                fullline = str(fullline).replace('[','').replace(']','')
+                f.write(fullline)
+
+    # mems
+    def log_mems(self, t, gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z):
+        self.mems_time.append(t)
+        self.gyro_bias.append([gyro_x.bias, gyro_y.bias, gyro_z.bias])
+        self.acc_bias.append([acc_x.bias, acc_y.bias, acc_z.bias])
+
+        

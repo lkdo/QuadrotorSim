@@ -31,7 +31,7 @@ class PID:
     by  Randal W. Beard and Timothy W. McLain 
     """
     
-    def __init__(self, kp,ki,kd,limit_up, limit_down, tau):
+    def __init__(self, kp,ki,kd, limit_up, limit_down, tau):
         """ Initialize the PID with the kp, ki and kd constants, saturation limits and tau"""
         
         self.kp = kp
@@ -61,6 +61,14 @@ class PID:
         self.error_d1 = 0 
         """ Previous error """
   
+        self.u = 0 
+        """ Last output """
+        
+        self.u_unsat = 0 
+        """ Last output unsaturated """
+        
+        self.Ts = 0
+        
     def reset(self):
 
         self.integrator = 0
@@ -74,18 +82,22 @@ class PID:
                                           + 2/(2*self.tau +Ts)*(error - self.error_d1)  )
         self.error_d1 = error
         
-        u_raw = self.kp*error + self.ki*self.integrator + self.kd*self.differentiator
-        
-        if (u_raw > self.limit_up ):
-            u = self.limit_up
-        elif (u_raw < self.limit_down ):
-            u = self.limit_down
-        else:
-            u = u_raw 
-            
+        self.u = self.kp*error + self.ki*self.integrator + self.kd*self.differentiator
+        self.u_unsat = self.u
+        self.Ts = Ts
+        return self.u 
+    
+    def saturate(self):
+         if (self.u > self.limit_up ):
+             self.u = self.limit_up
+         elif (self.u < self.limit_down ):
+             self.u = self.limit_down
+         
+         return self.u 
+
+    def antiwindup(self):
         # Integrator anti-windup
         if (self.ki != 0):
-            self.integrator = self.integrator +Ts/self.ki *(u - u_raw)
-        
-        return u 
+            self.integrator = self.integrator +self.Ts/self.ki *(self.u - self.u_unsat)
+
       
