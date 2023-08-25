@@ -50,7 +50,7 @@ def quadrotor_dt_kinematic_euler(X, t, ab, omegab):
     
     d_pos = X[6:9]
     d_rpy = Einv@omegab
-    d_ve = Reb@ab # have to correct for g as well 
+    d_ve = Reb@ab
 
     return np.concatenate([ d_pos, d_rpy, d_ve ])
 ##########################################################

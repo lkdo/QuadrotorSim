@@ -224,9 +224,9 @@ def quadrotor_dt_kinematic_euler_vb_dFXdX(X,u):
 [0 , 0 , 0 , oy*tp*cr - oz*tp*sr , oy*sr*tp**2 + oy*sr + oz*cr*tp**2 + oz*cr , 0 , 0 , 0 , 0 ], 
 [0 , 0 , 0 , -oy*sr - oz*cr , 0 , 0 , 0 , 0 , 0 ],
 [0 , 0 , 0 , oy*cr*cpi - oz*sr*cpi , oy*tp*sr*cpi + oz*tp*cr*cpi , 0 , 0 , 0 , 0], 
-[0 , 0 , 0 , 0 , 0 , 0 , 0 , oz , -oy ], 
-[0 , 0 , 0 , 0 , 0 , 0 , -oz , 0 , ox ],
-[0 , 0 , 0 , 0 , 0 , 0 , oy , -ox , 0 ]
+[0 , 0 , 0 , 0 , 9.81*cp , 0 , 0 , oz , -oy ], 
+[0 , 0 , 0 , -9.81*cp*cr , 9.81*sp*sr, 0 , -oz , 0 , ox],
+[0 , 0 , 0 , 9.81*sr*cp , 9.81*sp*cr, 0 , oy , -ox , 0], 
         ])
 
 def quadrotor_dt_kinematic_euler_vb_meas_pos(X):

@@ -30,8 +30,8 @@ def buildCtrlReference(ref_mode):
         step_2 = StepAndRampMetaSignal(63,73,-20)
         pos_y_ref = utils.build_signal_step(0,90,0,step_1, step_2)
 
-        step_1 = StepAndRampMetaSignal(43,53,3)
-        step_2 = StepAndRampMetaSignal(63,73,1)
+        step_1 = StepAndRampMetaSignal(43,53,15)
+        step_2 = StepAndRampMetaSignal(63,73,2)
         pos_z_ref = utils.build_signal_step(0,90,3,step_1, step_2)
 
         step_1 = StepAndRampMetaSignal(3,13,450*math.pi/180)
