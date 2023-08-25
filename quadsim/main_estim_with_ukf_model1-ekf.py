@@ -114,7 +114,8 @@ meas_pos = qrb.pos + np.random.normal(0, 0.01, 3) # GPS meas
 ##########################################################
 x0 = np.array([ meas_pos[0],meas_pos[1],meas_pos[2],  0,0,0, 0,0,0]) # x = [pos,euler,ve]
 P0 = np.diag([100.0,100.0,100.0, 0.01,0.01,9.0, 9.0,9.0,9.0])
-Q = np.diag([0.001,0.001,0.001, 0.001,0.001,0.001, 0.01,0.01,0.01])
+#Q = np.diag([0.001,0.001,0.001, 0.001,0.001,0.001, 0.01,0.01,0.01])
+Q = np.diag([0.0001,0.0001,0.0001, 0.0001,0.0001,0.0001, 0.01,0.01,0.01])
 
 hx_pos = rigidbody.quadrotor_dt_kinematic_euler_vb_meas_pos
 hxdx_pos = rigidbody.quadrotor_dt_kinematic_euler_vb_meas_pos_dHXdX

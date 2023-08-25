@@ -41,7 +41,7 @@ import envir
 import controllers
 import utils
 import mems
-import spkf
+import ekf
 import refs
 
 # Main Simulation Parameters
@@ -55,6 +55,7 @@ freq_ctrl_pos_p = 10  # Pos Control
 dt_sim = 1.0/(2*freq_ctrl_rate)  # integration step; has to be bigger than freq_ctrl_rate
 dt_log = 0.1  # logging step
 dt_vis = 1/30 # visualization frame step
+dt_imu = 1.0/100 # imu measurement 
 plus = True # Quadrotor configuration, plus or cross 
 dt_kf_predict = 1.0/100.0 # KF predict rate 
 kf_conv_delay = 0
@@ -112,23 +113,31 @@ meas_pos = qrb.pos + np.random.normal(0, 0.01, 3) # GPS meas
 
 # Initialize UKF (using Euler Angles)
 ##########################################################
-x0 = np.array([ meas_pos[0],meas_pos[1],meas_pos[2],  0,0,0, 0,0,0]) # x = [pos,euler,ve]
-P0 = np.diag([100.0,100.0,100.0, 0.01,0.01,9.0, 9.0,9.0,9.0])
-#Q = np.diag([0.001,0.001,0.001, 0.001,0.001,0.001, 0.01,0.01,0.01])
-Q = np.diag([0.0001,0.0001,0.0001, 0.0001,0.0001,0.0001, 0.01,0.01,0.01])
+x0 = np.array([ meas_pos[0],meas_pos[1],meas_pos[2],  0,0,0, 0,0,0, 0,0,0, 0,0,0]) # x = [pos, euler, vb, ob, ae]
+P0 = np.diag([100.0,100.0,100.0, 0.01,0.01,9.0, 9.0,9.0,9.0, 0.1,0.1,0.1, 1,1,1])
+Q = np.diag([0.0001,0.0001,0.0001, 0.0001,0.0001,0.0001, 0.01,0.01,0.01, 0.1,0.1,0.1, 1,1,1])
 
 alpha = 1*10**(-3)
 kappa = 0
 beta = 2.0
 
-hx_pos = lambda x: x[0:3] # we measure only position; omegab and ab are used as inputs for the filter, not states
+hx_pos = rigidbody.motion3d_ros_meas_pos
+hxdx_pos = rigidbody.motion3d_ros_meas_pos_dhdx
 R_pos = np.diag([0.02**2,0.02**2,0.05**2])
-hx_vb = lambda x: x[6:9] # we measure velocity - "wheels" 
-R_vb = np.diag([0.1**2,0.1**2,0.1**2])
-dfx = rigidbody.quadrotor_dt_kinematic_euler_vb
 
-sut =  spkf.SUT(alpha, beta, kappa, x0.shape[0])
-filter = spkf.SPKF(dfx,np.eye(x0.shape[0]),Q,x0,P0,sut,variant=1) # IUKF
+hx_vb = rigidbody.motion3d_ros_meas_vb
+hxdx_vb = rigidbody.motion3d_ros_meas_vb_dhdx
+R_vb = np.diag([0.1**2,0.1**2,0.1**2])
+
+hx_imu = rigidbody.motion3d_ros_meas_imu
+gyro_cov = (1.5*gyro_rw/math.sqrt(dt_imu))**2; acc_cov = (1.5*acc_rw/math.sqrt(dt_imu))**2
+R_imu = np.diag([gyro_cov, gyro_cov, gyro_cov, acc_cov, acc_cov, acc_cov])
+hxdx_imu = rigidbody.motion3d_ros_meas_imu_dhdx
+
+dfx = rigidbody.motion3d_ros
+dfdx = rigidbody.motion3d_ros_dFXdX
+
+filter = ekf.EKF(dfx,dfdx,np.eye(x0.shape[0]),Q,x0,P0)
 
 
 # Initialize predefined controller references 
@@ -182,35 +191,24 @@ while readkeys.exitpressed is False :
     meas_ay_av += meas_ay
     meas_az_av += meas_az
 
-
     #---------------------------------------measure GPS------------------------------------------------
     if abs(t/dt_gps - round(t/dt_gps)) < 0.000001 :
-            if (t-t_last_predict >0):
-                filter.predict(np.array([meas_gx_av,meas_gy_av,meas_gz_av,
-                    meas_ax_av,meas_ay_av,meas_az_av])/((t-t_last_predict)/dt_sim),
-                    t-t_last_predict, 1) # Euler integration
-                t_last_predict = t
-                # Reset down-sampling buffer 
-                meas_gx_av = 0; meas_gy_av = 0; meas_gz_av = 0
-                meas_ax_av = 0; meas_ay_av = 0; meas_az_av = 0
+        if (t-t_last_predict >0):
+            filter.predict(0, t-t_last_predict, 1) # Euler integration
+            t_last_predict = t
 
-            meas_pos = qrb.pos + np.random.normal(0, 2*np.sqrt(R_pos[0,0]), 3) # GNSS sensor, simple noise
-            filter.update(meas_pos, hx_pos, 0, R_pos, 1) # Joseph Form covariance update 
-            filter.x[3:6] = utils.wrap_euler(filter.x[3:6]) # if the innovation has angles, I should wrap those too, but it doesn't 
+        meas_pos = qrb.pos + np.random.normal(0, 2*np.sqrt(R_pos[0,0]), 3) # GNSS sensor, simple noise
+        filter.update(meas_pos, hx_pos, hxdx_pos, R_pos, 1) # Joseph Form covariance update 
+        filter.x[3:6] = utils.wrap_euler(filter.x[3:6]) # if the innovation has angles, I should wrap those too, but it doesn't 
 
     #---------------------------------------measure odometry ------------------------------------------------    
     if abs(t/dt_wheels - round(t/dt_wheels)) < 0.000001 :
         if (t-t_last_predict >0):
-            filter.predict(np.array([meas_gx_av,meas_gy_av,meas_gz_av,
-                meas_ax_av,meas_ay_av,meas_az_av])/((t-t_last_predict)/dt_sim),
-                t-t_last_predict, 1) # Euler integration
+            filter.predict(0, t-t_last_predict, 1) # Euler integration
             t_last_predict = t
-            # Reset down-sampling buffer 
-            meas_gx_av = 0; meas_gy_av = 0; meas_gz_av = 0
-            meas_ax_av = 0; meas_ay_av = 0; meas_az_av = 0
 
         meas_vb = ( utils.rpy2rotm(qrb.rpy).transpose()@qrb.ve) + np.random.normal(0, 2*np.sqrt(R_vb[0,0]), 3) # Velocity sensor (?), simple noise
-        filter.update(meas_vb, hx_vb, 0, R_vb, 1) # Joseph form covariance update 
+        filter.update(meas_vb, hx_vb, hxdx_vb, R_vb, 1) # Joseph form covariance update 
         filter.x[3:6] = utils.wrap_euler(filter.x[3:6]) # if the innovation has angles, I should wrap those too, but it doesn't 
     
     #------------------------------------begin controller --------------------------------------------
@@ -275,15 +273,25 @@ while readkeys.exitpressed is False :
 
     #------------------------------------------ predict ----------------------------------------
     if abs(t/dt_kf_predict - round(t/dt_kf_predict)) < 0.000001 and (t-t_last_predict>=1.0/100 ) :
-            filter.predict(np.array([meas_gx_av,meas_gy_av,meas_gz_av,
-                meas_ax_av,meas_ay_av,meas_az_av])/((t-t_last_predict)/dt_sim),
-                t-t_last_predict, 1) # Euler integration
+            filter.predict(0, t-t_last_predict, 1) # Euler integration
             t_last_predict = t
-            # Reset down-sampling buffer 
-            meas_gx_av = 0; meas_gy_av = 0; meas_gz_av = 0
-            meas_ax_av = 0; meas_ay_av = 0; meas_az_av = 0
-
             filter.x[3:6] = utils.wrap_euler(filter.x[3:6])
+
+   #---------------------------------------measure odometry ------------------------------------------------    
+    if abs(t/dt_imu - round(t/dt_imu)) < 0.000001 :
+        if (t-t_last_predict > 0):
+            filter.predict(0, t-t_last_predict, 1) # Euler integration
+            t_last_predict = t
+
+        meas_imu = np.array([meas_gx_av,meas_gy_av,meas_gz_av,
+            meas_ax_av,meas_ay_av,meas_az_av])/(dt_imu/dt_sim) # IMU
+        # Reset down-sampling buffer 
+        meas_gx_av = 0; meas_gy_av = 0; meas_gz_av = 0
+        meas_ax_av = 0; meas_ay_av = 0; meas_az_av = 0
+        
+        filter.update(meas_imu, hx_imu, hxdx_imu, R_imu, 1) # Joseph form covariance update 
+        filter.x[3:6] = utils.wrap_euler(filter.x[3:6]) # if the innovation has angles, I should wrap those too, but it doesn't 
+    
 
     #------------------------------------------ begin simulation -------------------------------------   
     # Calculate body-based forces and torques

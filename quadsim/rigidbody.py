@@ -56,6 +56,7 @@ def quadrotor_dt_kinematic_euler(X, t, u):
 
 def quadrotor_dt_kinematic_euler_vb(X, t, u):
     # X = [pos,euler,vb]
+    # u = [ meas_ob, meas_ab ]
     
     Reb = utils.rpy2rotm(X[3:6])
     
@@ -71,11 +72,35 @@ def quadrotor_dt_kinematic_euler_vb(X, t, u):
     
     d_pos = Reb@vb
     d_rpy = Einv@omegab
-    d_vb = np.transpose(utils.skew(omegab))@vb + ab
+    d_vb = -utils.skew(omegab)@vb + ab
 
     return np.concatenate([ d_pos, d_rpy, d_vb ])
 ##########################################################
 
+def motion3d_ros(X, t, u):
+    # X = [pos,euler,vb,ob,ae]
+
+    Reb = utils.rpy2rotm(X[3:6])
+    
+    vb = X[6:9]
+    omegab = X[9:12]
+    ae = X[12:15]
+    
+    cr = math.cos(X[3])
+    sr = math.sin(X[3])
+    cp = math.cos(X[4])
+    sp = math.sin(X[4])
+    Einv = 1.0/cp*np.array([ [ cp, sr*sp, cr*sp ], [ 0, cr*cp, -sr*cp ], [ 0, sr, cr ] ])
+    
+    d_pos = Reb@vb
+    d_rpy = Einv@omegab
+    d_vb = -utils.skew(omegab)@vb + Reb.transpose()@ae
+    d_ob = np.array([0,0,0])
+    d_ae = np.array([0,0,0])
+
+    return np.concatenate([ d_pos, d_rpy, d_vb, d_ob, d_ae ])
+##########################################################
+    
 def quadrotor_dt_dynamic_quat(X, t, mass, I, invI, fb, taub):
     # Implemented here using quaternions
     # X = [pos, qeb, ve, omegab]
@@ -253,3 +278,99 @@ def quadrotor_dt_kinematic_euler_vb_meas_vb_dHXdX(X):
 [0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0],
 [0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1] 
  ])
+
+# ************************************************
+
+def motion3d_ros_dFXdX(X,u):
+    # X = [ pos, euler, vb, ob, ae ]
+ 
+    # util exprs
+    roll = X[3];  pitch = X[4]; yaw = X[5]
+    vbx = X[6]; vby = X[7];  vbz = X[8]
+    ox = X[9]; oy = X[10]; oz = X[11]
+    ax = X[12]; ay = X[13]; az = X[14]
+    
+    sr = sin(roll)
+    cr = cos(roll)
+    sp = sin(pitch)
+    cp = cos(pitch)
+    sy = sin(yaw)
+    cy = cos(yaw)
+    cpi = 1.0/cp
+    tp = sp/cp
+ 
+    # From symbolic
+    return np.array([
+[0 , 0 , 0 , vby*(sp*cr*cy + sr*sy) + vbz*(-sp*sr*cy + sy*cr) , -vbx*sp*cy + vby*sr*cp*cy + vbz*cp*cr*cy , -vbx*sy*cp + vby*(-sp*sr*sy - cr*cy) + vbz*(-sp*sy*cr + sr*cy) , cp*cy , sp*sr*cy - sy*cr , sp*cr*cy + sr*sy , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , vby*(sp*sy*cr - sr*cy) + vbz*(-sp*sr*sy - cr*cy) , -vbx*sp*sy + vby*sr*sy*cp + vbz*sy*cp*cr , vbx*cp*cy + vby*(sp*sr*cy - sy*cr) + vbz*(sp*cr*cy + sr*sy) , sy*cp , sp*sr*sy + cr*cy , sp*sy*cr - sr*cy , 0 , 0 , 0 , 0 , 0 , 0  ] , 
+[0 , 0 , 0 , vby*cp*cr - vbz*sr*cp , -vbx*cp - vby*sp*sr - vbz*sp*cr , 0 , -sp , sr*cp , cp*cr , 0 , 0 , 0 , 0 , 0 , 0  ] , 
+[0 , 0 , 0 , oy*tp*cr - oz*tp*sr , oy*tp**2*sr + oy*sr + oz*tp**2*cr + oz*cr , 0 , 0 , 0 , 0 , 1 , tp*sr , tp*cr , 0 , 0 , 0  ] , 
+[0 , 0 , 0 , -oy*sr - oz*cr , 0 , 0 , 0 , 0 , 0 , 0 , cr , -sr , 0 , 0 , 0 ], 
+[0 , 0 , 0 , oy*cr*cpi - oz*sr*cpi , oy*tp*sr*cpi + oz*tp*cr*cpi , 0 , 0 , 0 , 0 , 0 , sr*cpi , cr*cpi , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , -ax*sp*cy - ay*sp*sy - az*cp , -ax*sy*cp + ay*cp*cy , 0 , oz , -oy , 0 , -vbz , vby , cp*cy , sy*cp , -sp ], 
+[0 , 0 , 0 , ax*(sp*cr*cy + sr*sy) + ay*(sp*sy*cr - sr*cy) + az*cp*cr , ax*sr*cp*cy + ay*sr*sy*cp - az*sp*sr , ax*(-sp*sr*sy - cr*cy) + ay*(sp*sr*cy - sy*cr) , -oz , 0 , ox , vbz , 0 , -vbx , sp*sr*cy - sy*cr , sp*sr*sy + cr*cy , sr*cp ], 
+[0 , 0 , 0 , ax*(-sp*sr*cy + sy*cr) + ay*(-sp*sr*sy - cr*cy) - az*sr*cp , ax*cp*cr*cy + ay*sy*cp*cr - az*sp*cr , ax*(-sp*sy*cr + sr*cy) + ay*(sp*cr*cy + sr*sy) , oy , -ox , 0 , -vby , vbx , 0 , sp*cr*cy + sr*sy , sp*sy*cr - sr*cy , cp*cr  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ] 
+    ])
+
+def motion3d_ros_meas_pos(X):
+    H1 = X[0:3]
+    return H1
+
+def motion3d_ros_meas_pos_dhdx(X):
+    return np.array([
+[1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], 
+[0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ]       
+    ])
+
+def motion3d_ros_meas_vb(X):
+    H2 = X[6:9]
+    return H2 
+
+def motion3d_ros_meas_vb_dhdx(X):
+    return np.array([
+[0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 , 0 ] 
+    ])
+
+def motion3d_ros_meas_imu(X):
+    # utils 
+    Reb = utils.rpy2rotm(X[3:6])
+    ob = X[9:12]
+    ae = X[12:15]
+    # eqs
+    H3 = ob
+    H4 = Reb.transpose()@(ae-np.array([0,0,-9.81]))
+    return np.concatenate([ H3, H4]) 
+
+def motion3d_ros_meas_imu_dhdx(X):
+    # X = [ pos, euler, vb, ob, ae ]
+ 
+    # util exprs
+    roll = X[3];  pitch = X[4]; yaw = X[5]
+    vbx = X[6]; vby = X[7];  vbz = X[8]
+    ox = X[9]; oy = X[10]; oz = X[11]
+    ax = X[12]; ay = X[13]; az = X[14]
+    
+    sr = sin(roll)
+    cr = cos(roll)
+    sp = sin(pitch)
+    cp = cos(pitch)
+    sy = sin(yaw)
+    cy = cos(yaw)
+
+    return np.array([
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 ], 
+[0 , 0 , 0 , 0 , -ax*sp*cy - ay*sp*sy - (az + 9.81)*cp , -ax*sy*cp + ay*cp*cy , 0 , 0 , 0 , 0 , 0 , 0 , cp*cy , sy*cp , -sp ], 
+[0 , 0 , 0 , ax*(sp*cr*cy + sr*sy) + ay*(sp*sy*cr - sr*cy) + (az + 9.81)*cp*cr , ax*sr*cp*cy + ay*sr*sy*cp - (az + 9.81)*sp*sr , ax*(-sp*sr*sy - cr*cy) + ay*(sp*sr*cy - sy*cr) , 0 , 0 , 0 , 0 , 0 , 0 , sp*sr*cy - sy*cr , sp*sr*sy + cr*cy , sr*cp  ], 
+[0 , 0 , 0 , ax*(-sp*sr*cy + sy*cr) + ay*(-sp*sr*sy - cr*cy) - (az + 9.81)*sr*cp , ax*cp*cr*cy + ay*sy*cp*cr - (az + 9.81)*sp*cr , ax*(-sp*sy*cr + sr*cy) + ay*(sp*cr*cy + sr*sy) , 0 , 0 , 0 , 0 , 0 , 0 , sp*cr*cy + sr*sy , sp*sy*cr - sr*cy , cp*cr ] 
+    ])

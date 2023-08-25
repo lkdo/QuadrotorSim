@@ -37,7 +37,7 @@ import ftaucf
 import rigidbody
 import logger 
 import plotter
-import envir  
+import envir 
 import controllers
 import utils
 import mems
@@ -114,7 +114,8 @@ meas_pos = qrb.pos + np.random.normal(0, 0.01, 3) # GPS meas
 ##########################################################
 x0 = np.array([ meas_pos[0],meas_pos[1],meas_pos[2],  0,0,0, 0,0,0]) # x = [pos,euler,ve]
 P0 = np.diag([100.0,100.0,100.0, 0.01,0.01,9.0, 9.0,9.0,9.0])
-Q = np.diag([0.001,0.001,0.001, 0.001,0.001,0.001, 0.01,0.01,0.01])
+#Q = np.diag([0.001,0.001,0.001, 0.001,0.001,0.001, 0.01,0.01,0.01])
+Q = np.diag([0.0001,0.0001,0.0001, 0.0001,0.0001,0.0001, 0.01,0.01,0.01])
 
 alpha = 1*10**(-3)
 kappa = 0
