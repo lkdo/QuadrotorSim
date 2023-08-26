@@ -117,9 +117,6 @@ x0 = np.array([ meas_pos[0],meas_pos[1],meas_pos[2],  0,0,0, 0,0,0, 0,0,0, 0,0,0
 P0 = np.diag([100.0,100.0,100.0, 0.01,0.01,9.0, 9.0,9.0,9.0, 0.1,0.1,0.1, 1,1,1])
 Q = np.diag([0.0001,0.0001,0.0001, 0.0001,0.0001,0.0001, 0.01,0.01,0.01, 0.1,0.1,0.1, 1,1,1])
 
-alpha = 1*10**(-3)
-kappa = 0
-beta = 2.0
 
 hx_pos = rigidbody.motion3d_ros_meas_pos
 hxdx_pos = rigidbody.motion3d_ros_meas_pos_dhdx
