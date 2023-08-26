@@ -240,9 +240,14 @@ class Logger:
         self.filter_time.append(t)
         self.filter_pos.append(state[0:3])
         self.filter_euler.append(180/math.pi*state[3:6])
-        self.filter_vel.append(state[6:9]) # either ve or vb 
-        self.filter_ba.append([0,0,0])
-        self.filter_bg.append([0,0,0])
+        self.filter_vel.append(state[6:9]) # either ve or vb
+        if len(state)<21: 
+                self.filter_bg.append([0,0,0])
+                self.filter_ba.append([0,0,0])
+        else:
+                self.filter_bg.append(state[15:18])
+                self.filter_ba.append(state[18:21])
+
 
     def log2file_filter(self):
         
